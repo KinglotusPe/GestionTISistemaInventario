@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Plastiquería y Descartables Jireh | Sistema de Ventas e Inventario</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./src/styles/main.css">
+  <link rel="stylesheet" href="./src/styles/components.css">
+</head>
+<body>
+  <div class="app-container">
+    <!-- ==================== SIDEBAR ==================== -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="brand-icon">P</div>
+        <div class="brand-info">
+          <h1>Plastiquería Jireh</h1>
+          <p>Descartables & Plásticos</p>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <a class="nav-item active" data-view="dashboard" id="nav-dashboard">
+          <span class="nav-icon">📊</span>
+          <span>Dashboard</span>
+        </a>
+        <a class="nav-item" data-view="inventario" id="nav-inventario">
+          <span class="nav-icon">📦</span>
+          <span>Inventario & Stock</span>
+        </a>
+        <a class="nav-item" data-view="ventas" id="nav-ventas">
+          <span class="nav-icon">💳</span>
+          <span>Punto de Venta (POS)</span>
+        </a>
+        <a class="nav-item" data-view="clientes" id="nav-clientes">
+          <span class="nav-icon">👥</span>
+          <span>Clientes</span>
+        </a>
+        <a class="nav-item" data-view="movimientos" id="nav-movimientos">
+          <span class="nav-icon">🔄</span>
+          <span>Movimientos / Kárdex</span>
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="user-profile">
+          <div class="user-avatar">AD</div>
+          <div class="user-details">
+            <h4>Administrador</h4>
+            <p>admin@jireh.com</p>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ==================== CONTENIDO PRINCIPAL ==================== -->
+    <div class="main-wrapper">
+      <!-- Topbar -->
+      <header class="topbar">
+        <div class="topbar-left">
+          <div class="view-title">
+            <h2 id="currentViewTitle">Dashboard General</h2>
+            <p id="currentViewSubtitle">Resumen ejecutivo de ventas, inventario y operaciones</p>
+          </div>
+        </div>
+
+        <div class="topbar-right">
+          <div class="connection-status" id="backendStatusBadge">
+            <span class="status-dot"></span> Verificando conexión...
+          </div>
+          <button class="btn-primary" onclick="window.app.switchView('ventas')">
+            <span>⚡</span> Nueva Venta
+          </button>
+        </div>
+      </header>
+
+      <!-- Vistas SPA -->
+      <main class="content-area">
+        
+        <!-- 1. VISTA DASHBOARD -->
+        <section id="view-dashboard" class="view-section active">
+          <!-- KPIs -->
+          <div class="kpi-grid">
+            <div class="kpi-card">
+              <div class="kpi-icon-wrap purple">💰</div>
+              <div class="kpi-info">
+                <h3>Total Ventas</h3>
+                <div class="kpi-value" id="kpiTotalVentas">S/ 0.00</div>
+                <div class="kpi-subtext">Ingresos acumulados</div>
+              </div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-icon-wrap green">📦</div>
+              <div class="kpi-info">
+                <h3>Total Productos</h3>
+                <div class="kpi-value" id="kpiTotalProductos">0</div>
+                <div class="kpi-subtext">Artículos registrados</div>
+              </div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-icon-wrap amber">⚠️</div>
+              <div class="kpi-info">
+                <h3>Alertas de Stock</h3>
+                <div class="kpi-value" id="kpiStockAlerta" style="color:var(--warning);">0</div>
+                <div class="kpi-subtext">Existencias bajo el mínimo</div>
+              </div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-icon-wrap blue">👥</div>
+              <div class="kpi-info">
+                <h3>Clientes Activos</h3>
+                <div class="kpi-value" id="kpiTotalClientes">0</div>
+                <div class="kpi-subtext">Directorio comercial</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tablas Resumen en Dashboard -->
+          <div style="display:grid;grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 1.5rem;">
+            <!-- Alertas de Stock -->
+            <div class="card-panel">
+              <div class="panel-header">
+                <div class="panel-title">🚨 Productos con Stock Bajo / Crítico</div>
+                <button class="btn-secondary" onclick="window.app.switchView('inventario')">Ver Todo el Catálogo</button>
+              </div>
+              <div class="table-responsive">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>Código</th>
+                      <th>Producto</th>
+                      <th>Stock Actual</th>
+                      <th>Mínimo</th>
+                      <th>Estado</th>
+                    </tr>
+                  </thead>
+                  <tbody id="dashboardAlertasStockTable">
+                    <!-- Dinámico -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Últimas Ventas -->
+            <div class="card-panel">
+              <div class="panel-header">
+                <div class="panel-title">🧾 Últimas Ventas Registradas</div>
+                <button class="btn-secondary" onclick="window.app.switchView('ventas')">Abrir POS</button>
+              </div>
+              <div class="table-responsive">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>Número</th>
+                      <th>Fecha</th>
+                      <th>Cliente</th>
+                      <th>Total</th>
+                      <th>Estado</th>
+                    </tr>
+                  </thead>
+                  <tbody id="dashboardUltimasVentasTable">
+                    <!-- Dinámico -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 2. VISTA INVENTARIO -->
+        <section id="view-inventario" class="view-section">
+          <div class="card-panel">
+            <div class="panel-header">
+              <div class="panel-title">Catálogo Completo de Productos</div>
+              <button class="btn-primary" id="btnAbrirModalNuevoProducto">
+                <span>+</span> Registrar Nuevo Producto
+              </button>
+            </div>
+
+            <!-- Filtros -->
+            <div class="filters-bar">
+              <div class="search-input-wrap">
+                <span class="search-icon">🔍</span>
+                <input type="text" id="searchInventarioInput" placeholder="Buscar por código de barra o nombre de producto...">
+              </div>
+              <select class="select-filter" id="filterCategoriaSelect">
+                <option value="">Todas las Categorías</option>
+              </select>
+            </div>
+
+            <!-- Tabla de Inventario -->
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Código</th>
+                    <th>Producto & Categoría</th>
+                    <th>P. Compra</th>
+                    <th>P. Venta</th>
+                    <th>Stock Actual</th>
+                    <th>Stock Mín.</th>
+                    <th>Estado Stock</th>
+                    <th>Acción</th>
+                  </tr>
+                </thead>
+                <tbody id="inventarioTableBody">
+                  <!-- Dinámico -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- 3. VISTA PUNTO DE VENTA (POS) -->
+        <section id="view-ventas" class="view-section">
+          <div class="pos-layout">
+            <!-- Catálogo de Venta Rápida -->
+            <div class="card-panel">
+              <div class="panel-header">
+                <div class="panel-title">Selección Rápida de Productos</div>
+                <div class="search-input-wrap" style="max-width: 280px;">
+                  <span class="search-icon">🔍</span>
+                  <input type="text" id="searchPosInput" placeholder="Filtrar producto...">
+                </div>
+              </div>
+              <div class="pos-products-grid" id="posProductsGrid">
+                <!-- Tarjetas dinámicas -->
+              </div>
+            </div>
+
+            <!-- Panel de Carrito / Factura -->
+            <div class="pos-cart-panel">
+              <div class="cart-header">
+                <h4 style="font-weight:700;font-size:1.05rem;">🛒 Orden de Venta</h4>
+                <span class="badge badge-info">Boleta Electrónica</span>
+              </div>
+
+              <!-- Selectores de Cliente y Método de Pago -->
+              <div style="padding:1rem 1.25rem 0.5rem 1.25rem;display:flex;flex-direction:column;gap:0.75rem;">
+                <div class="form-group">
+                  <label>Cliente:</label>
+                  <select class="form-control" id="posClienteSelect"></select>
+                </div>
+                <div class="form-group">
+                  <label>Método de Pago:</label>
+                  <select class="form-control" id="posMetodoPagoSelect"></select>
+                </div>
+              </div>
+
+              <!-- Lista de ítems -->
+              <div class="cart-items-list" id="cartItemsList">
+                <!-- Dinámico -->
+              </div>
+
+              <!-- Totales -->
+              <div class="cart-totals">
+                <div class="total-row">
+                  <span>Op. Gravada:</span>
+                  <span id="cartSubtotal">S/ 0.00</span>
+                </div>
+                <div class="total-row">
+                  <span>I.G.V. (18%):</span>
+                  <span id="cartIgv">S/ 0.00</span>
+                </div>
+                <div class="total-row grand-total">
+                  <span>TOTAL:</span>
+                  <span id="cartTotal">S/ 0.00</span>
+                </div>
+                <button class="btn-checkout" id="btnFinalizarVenta" disabled>
+                  Emitir Boleta & Cobrar
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 4. VISTA CLIENTES -->
+        <section id="view-clientes" class="view-section">
+          <div class="card-panel">
+            <div class="panel-header">
+              <div class="panel-title">Directorio de Clientes y Empresas</div>
+              <button class="btn-primary" id="btnAbrirModalNuevoCliente">
+                <span>+</span> Registrar Nuevo Cliente
+              </button>
+            </div>
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Documento</th>
+                    <th>Nombres / Razón Social</th>
+                    <th>Teléfono</th>
+                    <th>Correo Electrónico</th>
+                    <th>Dirección</th>
+                  </tr>
+                </thead>
+                <tbody id="clientesTableBody">
+                  <!-- Dinámico -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- 5. VISTA MOVIMIENTOS -->
+        <section id="view-movimientos" class="view-section">
+          <div class="card-panel">
+            <div class="panel-header">
+              <div class="panel-title">Kárdex de Movimientos de Inventario</div>
+              <span class="badge badge-info">Auditoría en tiempo real</span>
+            </div>
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Fecha y Hora</th>
+                    <th>Tipo</th>
+                    <th>Producto</th>
+                    <th>Cant.</th>
+                    <th>Stock (Ant ➔ Post)</th>
+                    <th>Motivo de Operación</th>
+                  </tr>
+                </thead>
+                <tbody id="movimientosTableBody">
+                  <!-- Dinámico -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+      </main>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL NUEVO PRODUCTO ==================== -->
+  <div class="modal-overlay" id="modalNuevoProducto">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3>Registrar Nuevo Producto</h3>
+        <button class="btn-close-modal">✕</button>
+      </div>
+      <form id="formNuevoProducto">
+        <div class="modal-body">
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="modalProdCodigo">Código de Barra / SKU *</label>
+              <input type="text" id="modalProdCodigo" class="form-control" placeholder="Ej. PLAS-009" required>
+            </div>
+            <div class="form-group">
+              <label for="modalProdNombre">Nombre del Producto *</label>
+              <input type="text" id="modalProdNombre" class="form-control" placeholder="Ej. Taper Térmico CT4 con tapa" required>
+            </div>
+            <div class="form-group">
+              <label for="modalProdCategoria">Categoría *</label>
+              <select id="modalProdCategoria" class="form-control" required></select>
+            </div>
+            <div class="form-group">
+              <label for="modalProdMarca">Marca *</label>
+              <select id="modalProdMarca" class="form-control" required></select>
+            </div>
+            <div class="form-group">
+              <label for="modalProdUnidad">Unidad de Medida *</label>
+              <select id="modalProdUnidad" class="form-control" required></select>
+            </div>
+            <div class="form-group">
+              <label for="modalProdUbicacion">Ubicación en Almacén</label>
+              <input type="text" id="modalProdUbicacion" class="form-control" placeholder="Ej. Pasillo A - Estante 1">
+            </div>
+            <div class="form-group">
+              <label for="modalProdPrecioCompra">Precio Compra (S/) *</label>
+              <input type="number" step="0.01" min="0" id="modalProdPrecioCompra" class="form-control" placeholder="0.00" required>
+            </div>
+            <div class="form-group">
+              <label for="modalProdPrecioVenta">Precio Venta (S/) *</label>
+              <input type="number" step="0.01" min="0" id="modalProdPrecioVenta" class="form-control" placeholder="0.00" required>
+            </div>
+            <div class="form-group">
+              <label for="modalProdStockActual">Stock Inicial *</label>
+              <input type="number" min="0" id="modalProdStockActual" class="form-control" placeholder="0" required>
+            </div>
+            <div class="form-group">
+              <label for="modalProdStockMinimo">Stock Mínimo (Alerta) *</label>
+              <input type="number" min="1" id="modalProdStockMinimo" class="form-control" value="10" required>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-secondary btn-close-modal">Cancelar</button>
+          <button type="submit" class="btn-primary">Guardar Producto</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL NUEVO CLIENTE ==================== -->
+  <div class="modal-overlay" id="modalNuevoCliente">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3>Registrar Nuevo Cliente</h3>
+        <button class="btn-close-modal">✕</button>
+      </div>
+      <form id="formNuevoCliente">
+        <div class="modal-body">
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="modalClienteTipoDoc">Tipo Documento *</label>
+              <select id="modalClienteTipoDoc" class="form-control">
+                <option value="DNI">DNI</option>
+                <option value="RUC">RUC</option>
+                <option value="CE">Carnet Extranjería</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="modalClienteNumDoc">Número de Documento *</label>
+              <input type="text" id="modalClienteNumDoc" class="form-control" placeholder="8 o 11 dígitos" required>
+            </div>
+            <div class="form-group">
+              <label for="modalClienteNombres">Nombres / Contacto *</label>
+              <input type="text" id="modalClienteNombres" class="form-control" required>
+            </div>
+            <div class="form-group">
+              <label for="modalClienteApellidos">Apellidos / Razón Social *</label>
+              <input type="text" id="modalClienteApellidos" class="form-control" required>
+            </div>
+            <div class="form-group">
+              <label for="modalClienteTelefono">Teléfono / Celular</label>
+              <input type="text" id="modalClienteTelefono" class="form-control" placeholder="999888777">
+            </div>
+            <div class="form-group">
+              <label for="modalClienteCorreo">Correo Electrónico</label>
+              <input type="email" id="modalClienteCorreo" class="form-control" placeholder="correo@ejemplo.com">
+            </div>
+            <div class="form-group col-span-2">
+              <label for="modalClienteDireccion">Dirección Fiscal / Entrega</label>
+              <input type="text" id="modalClienteDireccion" class="form-control" placeholder="Av. / Jr. / Calle">
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-secondary btn-close-modal">Cancelar</button>
+          <button type="submit" class="btn-primary">Guardar Cliente</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL TICKET DE VENTA ==================== -->
+  <div class="modal-overlay" id="modalTicket">
+    <div class="modal-dialog" style="max-width: 420px;">
+      <div class="modal-header">
+        <h3>Comprobante Emitido</h3>
+        <button class="btn-close-modal">✕</button>
+      </div>
+      <div class="modal-body" id="ticketModalContent">
+        <!-- Renderizado dinámico del recibo -->
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn-secondary btn-close-modal">Cerrar</button>
+        <button type="button" class="btn-primary" onclick="window.app.imprimirTicket()">
+          <span>🖨️</span> Imprimir / PDF
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toasts -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- Script Principal -->
+  <script src="./src/app.js"></script>
+</body>
+</html>

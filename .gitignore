@@ -1,11 +1,66 @@
-﻿target/
+# ==========================================
+# Archivos y Carpetas Ignorados
+# Sistema de Ventas e Inventario Jireh
+# ==========================================
+
+# --- Backend (Java / Spring Boot / Maven) ---
+target/
+**/target/
 *.class
+*.jar
+*.war
+*.ear
+.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+# --- Frontend (Node / React / Vue / Angular) ---
+node_modules/
+**/node_modules/
+dist/
+**/dist/
+build/
+**/build/
+.npm
+.eslintcache
+.stylelintcache
+*.tsbuildinfo
+
+# --- Variables de Entorno y Secretos ---
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# --- Logs ---
 *.log
+logs/
+**/logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# --- IDEs y Editores de Código ---
 .idea/
+*.iws
 *.iml
+*.ipr
 .vscode/
 .settings/
 .project
 .classpath
 .factorypath
+.apt_generated
+.springBeans
+.sts4-cache
+nbproject/
+nbbuild/
+nbdist/
+.nb-gradle/
+
+# --- Sistema Operativo ---
 .DS_Store
+Thumbs.db
+desktop.ini
