@@ -23,7 +23,7 @@ public class Rol {
     @Column(nullable = false)
     private Boolean estado = true;
 
-    protected Rol() { }
+    public Rol() { }
     public Long getId() { return id; }
     public String getNombre() { return nombre; }
     public void setNombre(String nombre) { this.nombre = nombre; }

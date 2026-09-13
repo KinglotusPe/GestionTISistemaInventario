@@ -44,7 +44,7 @@ public class MovimientoInventario {
     @JoinColumn(name = "producto_id", nullable = false)
     private Producto producto;
 
-    protected MovimientoInventario() { }
+    public MovimientoInventario() { }
     public Long getId() { return id; }
     public String getTipoMovimiento() { return tipoMovimiento; }
     public void setTipoMovimiento(String tipoMovimiento) { this.tipoMovimiento = tipoMovimiento; }

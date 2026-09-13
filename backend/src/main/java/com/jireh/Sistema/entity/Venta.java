@@ -56,7 +56,7 @@ public class Venta {
     @OneToMany(mappedBy = "venta", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<DetalleVenta> detalles = new ArrayList<>();
 
-    protected Venta() { }
+    public Venta() { }
     public Long getId() { return id; }
     public String getNumero() { return numero; }
     public void setNumero(String numero) { this.numero = numero; }

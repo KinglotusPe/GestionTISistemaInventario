@@ -62,7 +62,7 @@ public class Compra {
     private List<DetalleCompra> detalles = new ArrayList<>();
 
     // Constructor requerido por JPA
-    protected Compra() {
+    public Compra() {
     }
 
     // Constructor para crear una compra

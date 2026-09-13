@@ -29,7 +29,7 @@ public class Categoria {
     @OneToMany(mappedBy = "categoria")
     private List<Producto> productos = new ArrayList<>();
 
-    protected Categoria() { }
+    public Categoria() { }
     public Long getId() { return id; }
 
     public String getNombre() { return nombre; }

@@ -35,7 +35,7 @@ public class DetalleCompra {
     @Column(nullable = false, precision = 12, scale = 2)
     private BigDecimal subtotal;
 
-    protected DetalleCompra() { }
+    public DetalleCompra() { }
     public Long getId() { return id; }
     public Compra getCompra() { return compra; }
     public void setCompra(Compra compra) { this.compra = compra; }

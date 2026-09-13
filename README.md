@@ -73,54 +73,45 @@ Sistema_ventas_inventario/
 
 ---
 
-## 🚀 Guía de Instalación y Ejecución Local
+## 🚀 Guía Rápida de Ejecución
 
-Sigue estos pasos en orden para poner en marcha el proyecto en tu entorno local:
+El proyecto incluye ejecutables de **1 solo clic** pensados para correr tanto en tu máquina local como en computadoras de la universidad:
 
-### 1. Preparar la Base de Datos (MySQL)
-
-1. Inicia tu servidor local de **MySQL** (puerto predeterminado `3306`).
-2. Abre tu gestor de preferencia (**MySQL Workbench**, **DBeaver** o terminal).
-3. Ejecuta el script de base de datos ubicado en [`database/jireh.sql`](file:///d:/GestionTI/Sistema_ventas_inventario/database/jireh.sql):
-
-```bash
-# Opción por terminal de comandos:
-mysql -u root -p < database/jireh.sql
-```
-
-Esto creará la base de datos `jireh` con todas sus tablas, restricciones de clave foránea y registros iniciales.
+### 🌟 Opción 1: Ejecución Completa (Backend Spring Boot + Frontend Web + MySQL)
+Haz doble clic en:
+👉 **`1_INICIAR_SISTEMA_COMPLETO.bat`**
+- Inicia el servidor Spring Boot en el puerto `8080`.
+- Conecta con la base de datos MySQL local (`root / root`).
+- Abre automáticamente tu navegador en `http://localhost:8080/` con la aplicación web completa y conectada a la API REST.
 
 ---
 
-### 2. Configurar y Ejecutar el Backend (Spring Boot)
-
-1. Abre el archivo [`backend/src/main/resources/application.properties`](file:///d:/GestionTI/Sistema_ventas_inventario/backend/src/main/resources/application.properties) y verifica que el usuario y la contraseña coincidan con tu servidor MySQL local:
-
-```properties
-spring.datasource.url=jdbc:mysql://localhost:3306/jireh?useSSL=false&serverTimezone=UTC
-spring.datasource.username=root
-spring.datasource.password=TU_PASSWORD_AQUI
-```
-
-2. Ejecuta el backend desde la terminal:
-
-```powershell
-# En Windows (PowerShell / CMD)
-cd backend
-.\mvnw.cmd spring-boot:run
-```
-
-*O bien, ábrelo en tu IDE favorito (IntelliJ IDEA, VS Code, Eclipse) y ejecuta la clase principal:*  
-`SistemaVentasInventarioJirehApplication.java`
-
-El servidor iniciará por defecto en: `http://localhost:8080`
+### 🎒 Opción 2: Modo Universidad / Presentación (100% Offline, Sin Requisitos)
+Si en las computadoras de la universidad **no tienes permisos de administrador**, no está instalado MySQL o no está instalado Java 17:
+Haz doble clic en:
+👉 **`2_MODO_OFFLINE_UNIVERSIDAD.bat`** (o abre [`frontend/index.html`](file:///d:/GestionTI/Sistema_ventas_inventario/frontend/index.html) en Chrome o Edge).
+- **Cero dependencias:** Funciona al instante en cualquier PC.
+- Carga el catálogo completo de Plastiquería Jireh, POS, kárdex, clientes y cálculo de comprobantes utilizando almacenamiento local (`localStorage`).
 
 ---
 
-### 3. Frontend
+### 🗄️ Opción 3: Inicializar la Base de Datos MySQL
+Si instalaste MySQL y necesitas crear la base de datos y cargar las tablas:
+Haz doble clic en:
+👉 **`3_IMPORTAR_BD_MYSQL.bat`** (o ejecuta el script [`database/jireh.sql`](file:///d:/GestionTI/Sistema_ventas_inventario/database/jireh.sql)).
 
-El módulo [`frontend/`](file:///d:/GestionTI/Sistema_ventas_inventario/frontend) contiene la estructura base para la interfaz de usuario.
-- En [`frontend/src/services/api.js`](file:///d:/GestionTI/Sistema_ventas_inventario/frontend/src/services/api.js) se encuentra configurada la URL base del backend (`http://localhost:8080/api`) para consumir los endpoints REST.
+---
+
+### ⚙️ Ejecución Manual por Terminal (Opcional)
+
+1. **Configuración de base de datos** en [`backend/src/main/resources/application.properties`](file:///d:/GestionTI/Sistema_ventas_inventario/backend/src/main/resources/application.properties) (por defecto usuario `root`, contraseña `root`).
+2. **Iniciar Backend:**
+   ```powershell
+   cd backend
+   .\mvnw.cmd spring-boot:run
+   ```
+3. **Acceder a la Aplicación:**
+   Abre tu navegador en `http://localhost:8080/`. El backend ahora aloja automáticamente el frontend y provee la API REST en `/api/`.
 
 ---
 

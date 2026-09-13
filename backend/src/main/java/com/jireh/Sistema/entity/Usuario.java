@@ -42,7 +42,7 @@ public class Usuario {
     @JoinColumn(name = "rol_id", nullable = false)
     private Rol rol;
 
-    protected Usuario() { }
+    public Usuario() { }
     public Long getId() { return id; }
     public String getUsuario() { return usuario; }
     public void setUsuario(String usuario) { this.usuario = usuario; }

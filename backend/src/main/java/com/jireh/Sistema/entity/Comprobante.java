@@ -38,7 +38,7 @@ public class Comprobante {
     @JoinColumn(name = "venta_id", nullable = false, unique = true)
     private Venta venta;
 
-    protected Comprobante() { }
+    public Comprobante() { }
     public Long getId() { return id; }
     public String getTipo() { return tipo; }
     public void setTipo(String tipo) { this.tipo = tipo; }

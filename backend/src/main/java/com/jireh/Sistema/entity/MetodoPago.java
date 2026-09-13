@@ -23,7 +23,7 @@ public class MetodoPago {
     @Column(nullable = false)
     private Boolean estado = true;
 
-    protected MetodoPago() { }
+    public MetodoPago() { }
     public Long getId() { return id; }
     public String getNombre() { return nombre; }
     public void setNombre(String nombre) { this.nombre = nombre; }

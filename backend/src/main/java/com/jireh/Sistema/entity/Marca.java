@@ -23,7 +23,7 @@ public class Marca {
     @Column(nullable = false)
     private Boolean estado = true;
 
-    protected Marca() { }
+    public Marca() { }
     public Long getId() { return id; }
     public String getNombre() { return nombre; }
     public void setNombre(String nombre) { this.nombre = nombre; }

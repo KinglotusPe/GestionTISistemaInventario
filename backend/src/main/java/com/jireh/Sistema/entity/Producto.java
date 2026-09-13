@@ -51,7 +51,7 @@ public class Producto {
     @Column(nullable = false)
     private Boolean estado = true;
 
-    protected Producto() { }
+    public Producto() { }
     public Long getId() { return id; }
     public String getCodigo() { return codigo; }
     public void setCodigo(String codigo) { this.codigo = codigo; }

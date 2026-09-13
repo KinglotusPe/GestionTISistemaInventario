@@ -33,7 +33,7 @@ public class Inventario {
     @Column(name = "fecha_actualizacion", nullable = false)
     private LocalDateTime fechaActualizacion = LocalDateTime.now();
 
-    protected Inventario() { }
+    public Inventario() { }
     public Long getId() { return id; }
     public Producto getProducto() { return producto; }
     public void setProducto(Producto producto) { this.producto = producto; }

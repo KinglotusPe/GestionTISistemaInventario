@@ -32,7 +32,7 @@ public class Proveedor {
     @Column(length = 180)
     private String direccion;
 
-    protected Proveedor() { }
+    public Proveedor() { }
 
     public Long getId() { return id; }
     public String getRuc() { return ruc; }
