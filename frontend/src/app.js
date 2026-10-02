@@ -539,9 +539,8 @@
   };
 
   // ==================== 5. INICIALIZACIÓN DE LA UI ====================
-  window.addEventListener('DOMContentLoaded', async () => {
+  function initApp() {
     setupModals();
-    await checkBackend();
 
     const storedUser = getLoggedUser();
     if (!storedUser) {
@@ -553,6 +552,13 @@
       updateUserUI();
       switchView('dashboard');
     }
+
+    // Verificar backend asíncronamente
+    checkBackend().then(() => {
+      if (state.currentUser) {
+        renderCurrentView();
+      }
+    });
 
     // Auto-focus barcode input in POS
     document.addEventListener('keydown', (e) => {
@@ -594,13 +600,25 @@
     if (vntInput) {
       vntInput.addEventListener('input', renderVentas);
     }
-  });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initApp);
+  } else {
+    initApp();
+  }
 
   // ==================== 6. RUTINAS DE AUTENTICACIÓN ====================
   function showLoginModal(show) {
     const overlay = document.getElementById('loginOverlay');
-    if (!overlay) return;
-    overlay.style.display = show ? 'flex' : 'none';
+    if (overlay) {
+      overlay.style.display = show ? 'flex' : 'none';
+    }
+    if (show) {
+      document.body.classList.remove('is-authenticated');
+    } else {
+      document.body.classList.add('is-authenticated');
+    }
     const alert = document.getElementById('loginAlert');
     if (alert) alert.style.display = 'none';
   }
@@ -972,7 +990,7 @@
       prods = prods.filter(p => p.categoriaId === state.selectedPosCategory);
     }
     if (state.posSearchQuery) {
-      prods = prods.filter(p => 
+      prods = prods.filter(p =>
         p.nombre.toLowerCase().includes(state.posSearchQuery) ||
         (p.codigo && p.codigo.toLowerCase().includes(state.posSearchQuery)) ||
         (p.codigoBarras && p.codigoBarras.toLowerCase().includes(state.posSearchQuery))
@@ -1020,7 +1038,7 @@
   function buscarYAgregarPorCodigo(code) {
     if (!code) return;
     const store = getStore();
-    const prod = store.productos.find(p => 
+    const prod = store.productos.find(p =>
       p.estado && (
         (p.codigoBarras && p.codigoBarras.toLowerCase() === code.toLowerCase()) ||
         (p.codigo && p.codigo.toLowerCase() === code.toLowerCase()) ||
@@ -2682,49 +2700,59 @@
   // ----- 8.16 ROLES & PERMISOS (RBAC) -----
   const listaPermisosBase = [
     { modulo: "Dashboard", items: [{ codigo: "DASHBOARD_VER", nombre: "Ver Tablero Principal" }] },
-    { modulo: "Ventas y POS", items: [
-      { codigo: "VENTA_VER", nombre: "Ver Historial de Ventas" },
-      { codigo: "VENTA_CREAR", nombre: "Crear Ventas en POS" },
-      { codigo: "VENTA_ANULAR", nombre: "Anular Ventas" },
-      { codigo: "VENTA_DESCUENTO", nombre: "Aplicar Descuentos" },
-      { codigo: "COTIZACION_VER", nombre: "Ver Cotizaciones" },
-      { codigo: "COTIZACION_CREAR", nombre: "Crear Cotizaciones" },
-      { codigo: "VENTA_DEVOLVER", nombre: "Gestionar Devoluciones" }
-    ]},
-    { modulo: "Inventario y Productos", items: [
-      { codigo: "PRODUCTO_VER", nombre: "Ver Catálogo" },
-      { codigo: "PRODUCTO_CREAR", nombre: "Registrar Productos" },
-      { codigo: "PRODUCTO_EDITAR", nombre: "Modificar Precios y Stock" },
-      { codigo: "PRODUCTO_DESACTIVAR", nombre: "Desactivar Productos" },
-      { codigo: "INVENTARIO_VER", nombre: "Ver Existencias" },
-      { codigo: "INVENTARIO_AJUSTAR", nombre: "Ajustar Stock Manual" },
-      { codigo: "KARDEX_VER", nombre: "Consultar Kárdex" }
-    ]},
-    { modulo: "Compras y Proveedores", items: [
-      { codigo: "COMPRA_VER", nombre: "Ver Compras" },
-      { codigo: "COMPRA_CREAR", nombre: "Registrar Compras" },
-      { codigo: "ORDEN_COMPRA_VER", nombre: "Ver Órdenes de Compra" },
-      { codigo: "ORDEN_COMPRA_CREAR", nombre: "Crear Órdenes de Compra" },
-      { codigo: "PROVEEDOR_VER", nombre: "Ver Proveedores" },
-      { codigo: "PROVEEDOR_CREAR", nombre: "Registrar Proveedores" }
-    ]},
-    { modulo: "Finanzas y Caja", items: [
-      { codigo: "CAJA_VER", nombre: "Ver Caja Activa" },
-      { codigo: "CAJA_ABRIR", nombre: "Apertura de Caja" },
-      { codigo: "CAJA_CERRAR", nombre: "Cierre y Arqueo" },
-      { codigo: "CAJA_INGRESO", nombre: "Registrar Ingresos" },
-      { codigo: "CAJA_EGRESO", nombre: "Registrar Egresos" },
-      { codigo: "FINANZAS_VER", nombre: "Cuentas por Cobrar y Pagar" }
-    ]},
-    { modulo: "Reportes y Seguridad", items: [
-      { codigo: "REPORTE_VENTAS", nombre: "Reporte de Ventas" },
-      { codigo: "REPORTE_INVENTARIO", nombre: "Reporte de Inventario" },
-      { codigo: "REPORTE_GANANCIAS", nombre: "Reporte de Rentabilidad" },
-      { codigo: "USUARIO_VER", nombre: "Ver Usuarios" },
-      { codigo: "ROL_GESTIONAR", nombre: "Administrar Roles y Permisos" },
-      { codigo: "AUDITORIA_VER", nombre: "Ver Auditoría del Sistema" },
-      { codigo: "CONFIG_EMPRESA", nombre: "Configuración de Empresa" }
-    ]}
+    {
+      modulo: "Ventas y POS", items: [
+        { codigo: "VENTA_VER", nombre: "Ver Historial de Ventas" },
+        { codigo: "VENTA_CREAR", nombre: "Crear Ventas en POS" },
+        { codigo: "VENTA_ANULAR", nombre: "Anular Ventas" },
+        { codigo: "VENTA_DESCUENTO", nombre: "Aplicar Descuentos" },
+        { codigo: "COTIZACION_VER", nombre: "Ver Cotizaciones" },
+        { codigo: "COTIZACION_CREAR", nombre: "Crear Cotizaciones" },
+        { codigo: "VENTA_DEVOLVER", nombre: "Gestionar Devoluciones" }
+      ]
+    },
+    {
+      modulo: "Inventario y Productos", items: [
+        { codigo: "PRODUCTO_VER", nombre: "Ver Catálogo" },
+        { codigo: "PRODUCTO_CREAR", nombre: "Registrar Productos" },
+        { codigo: "PRODUCTO_EDITAR", nombre: "Modificar Precios y Stock" },
+        { codigo: "PRODUCTO_DESACTIVAR", nombre: "Desactivar Productos" },
+        { codigo: "INVENTARIO_VER", nombre: "Ver Existencias" },
+        { codigo: "INVENTARIO_AJUSTAR", nombre: "Ajustar Stock Manual" },
+        { codigo: "KARDEX_VER", nombre: "Consultar Kárdex" }
+      ]
+    },
+    {
+      modulo: "Compras y Proveedores", items: [
+        { codigo: "COMPRA_VER", nombre: "Ver Compras" },
+        { codigo: "COMPRA_CREAR", nombre: "Registrar Compras" },
+        { codigo: "ORDEN_COMPRA_VER", nombre: "Ver Órdenes de Compra" },
+        { codigo: "ORDEN_COMPRA_CREAR", nombre: "Crear Órdenes de Compra" },
+        { codigo: "PROVEEDOR_VER", nombre: "Ver Proveedores" },
+        { codigo: "PROVEEDOR_CREAR", nombre: "Registrar Proveedores" }
+      ]
+    },
+    {
+      modulo: "Finanzas y Caja", items: [
+        { codigo: "CAJA_VER", nombre: "Ver Caja Activa" },
+        { codigo: "CAJA_ABRIR", nombre: "Apertura de Caja" },
+        { codigo: "CAJA_CERRAR", nombre: "Cierre y Arqueo" },
+        { codigo: "CAJA_INGRESO", nombre: "Registrar Ingresos" },
+        { codigo: "CAJA_EGRESO", nombre: "Registrar Egresos" },
+        { codigo: "FINANZAS_VER", nombre: "Cuentas por Cobrar y Pagar" }
+      ]
+    },
+    {
+      modulo: "Reportes y Seguridad", items: [
+        { codigo: "REPORTE_VENTAS", nombre: "Reporte de Ventas" },
+        { codigo: "REPORTE_INVENTARIO", nombre: "Reporte de Inventario" },
+        { codigo: "REPORTE_GANANCIAS", nombre: "Reporte de Rentabilidad" },
+        { codigo: "USUARIO_VER", nombre: "Ver Usuarios" },
+        { codigo: "ROL_GESTIONAR", nombre: "Administrar Roles y Permisos" },
+        { codigo: "AUDITORIA_VER", nombre: "Ver Auditoría del Sistema" },
+        { codigo: "CONFIG_EMPRESA", nombre: "Configuración de Empresa" }
+      ]
+    }
   ];
 
   function renderRoles() {
@@ -2757,8 +2785,8 @@
         </div>
         <div class="rbac-perm-list">
           ${mod.items.map(p => {
-            const checked = esSuperAdmin || permisosRol.includes('*') || permisosRol.includes(p.codigo);
-            return `
+      const checked = esSuperAdmin || permisosRol.includes('*') || permisosRol.includes(p.codigo);
+      return `
               <label class="rbac-perm-item">
                 <input type="checkbox" class="rbac-checkbox" value="${p.codigo}" 
                        ${checked ? 'checked' : ''} 
@@ -2766,7 +2794,7 @@
                 <span>${p.nombre}</span>
               </label>
             `;
-          }).join('')}
+    }).join('')}
         </div>
       </div>
     `).join('');

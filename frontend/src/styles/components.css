@@ -602,10 +602,6 @@
 }
 
 /* ==================== LOGIN SCREEN & AUTH STYLES ==================== */
-body:not(.is-authenticated) .app-container {
-  display: none !important;
-}
-
 body.is-authenticated .login-overlay {
   display: none !important;
 }
