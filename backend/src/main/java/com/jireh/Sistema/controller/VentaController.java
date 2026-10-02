@@ -1,6 +1,7 @@
 package com.jireh.Sistema.controller;
 
 import com.jireh.Sistema.dto.VentaDTO;
+import com.jireh.Sistema.security.RequirePermission;
 import com.jireh.Sistema.service.VentaService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -24,6 +25,7 @@ public class VentaController {
     }
 
     @PostMapping
+    @RequirePermission("VENTA_CREAR")
     public ResponseEntity<VentaDTO> registrarVenta(@RequestBody VentaDTO req) {
         return ResponseEntity.ok(ventaService.registrarVenta(req));
     }

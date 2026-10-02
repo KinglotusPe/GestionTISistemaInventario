@@ -3,24 +3,25 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Plastiquería y Descartables Jireh | Sistema de Ventas e Inventario</title>
+  <title>Plastiquería Jireh | Sistema Integral de Ventas, Compras e Inventario</title>
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="./src/styles/main.css?v=2.0">
-  <link rel="stylesheet" href="./src/styles/components.css?v=2.0">
+  <link rel="stylesheet" href="./src/styles/main.css?v=3.0">
+  <link rel="stylesheet" href="./src/styles/components.css?v=3.0">
 </head>
-<body class="">
+<body>
+
   <!-- ==================== PANTALLA DE LOGIN ==================== -->
   <div class="login-overlay" id="loginOverlay">
     <div class="login-card">
       <div class="login-brand-header">
-        <div class="login-logo">P</div>
+        <div class="login-logo">PJ</div>
         <h2>Plastiquería Jireh</h2>
-        <p>Sistema Integral de Ventas e Inventario</p>
+        <p>Sistema Comercial & POS Mayorista / Minorista</p>
       </div>
 
       <div class="login-error-alert" id="loginAlert">
@@ -30,10 +31,10 @@
 
       <form class="login-form" id="loginForm" onsubmit="event.preventDefault(); window.app.handleLogin();">
         <div class="form-group">
-          <label for="loginUser">Usuario o Código</label>
+          <label for="loginUser">Usuario</label>
           <div class="login-input-wrap">
             <span class="login-input-icon">👤</span>
-            <input type="text" id="loginUser" class="form-control" placeholder="Ej: admin, vendedor, almacenero" required autocomplete="username">
+            <input type="text" id="loginUser" class="form-control" placeholder="Ej: admin, cajero, vendedor" required autocomplete="username">
           </div>
         </div>
 
@@ -41,10 +42,8 @@
           <label for="loginPass">Contraseña</label>
           <div class="login-input-wrap">
             <span class="login-input-icon">🔒</span>
-            <input type="password" id="loginPass" class="form-control" placeholder="Ingresa tu contraseña" required autocomplete="current-password">
-            <button type="button" class="btn-toggle-pwd" id="btnTogglePwd" title="Mostrar/ocultar contraseña" onclick="window.app.togglePasswordVisibility()">
-              👁️
-            </button>
+            <input type="password" id="loginPass" class="form-control" placeholder="Contraseña de acceso" required autocomplete="current-password">
+            <button type="button" class="btn-toggle-pwd" id="btnTogglePwd" title="Mostrar/ocultar contraseña" onclick="window.app.togglePasswordVisibility()">👁️</button>
           </div>
         </div>
 
@@ -57,68 +56,167 @@
       <!-- Botones de Acceso Rápido para Demostración -->
       <div class="quick-fill-section">
         <div class="quick-fill-label">
-          <span>Cuentas de Acceso Rápido</span>
+          <span>Perfiles Predeterminados RBAC</span>
           <span style="font-size: 0.68rem; color: #94a3b8;">(Clic para rellenar)</span>
         </div>
-        <div class="quick-fill-grid">
+        <div class="quick-fill-grid" style="grid-template-columns: repeat(3, 1fr); gap: 0.4rem;">
           <button type="button" class="quick-pill" onclick="window.app.fillCredentials('admin', 'admin')">
-            <span>👑 Admin</span>
-            <span class="pill-role">Acceso Total</span>
+            <span>👑 SuperAdmin</span>
+            <span class="pill-role">Total</span>
+          </button>
+          <button type="button" class="quick-pill" onclick="window.app.fillCredentials('cajero', 'cajero123')">
+            <span>💳 Cajero</span>
+            <span class="pill-role">POS & Caja</span>
           </button>
           <button type="button" class="quick-pill" onclick="window.app.fillCredentials('vendedor', 'vendedor123')">
-            <span>💼 Ventas</span>
-            <span class="pill-role">POS & Boletas</span>
+            <span>💼 Vendedor</span>
+            <span class="pill-role">Cotizaciones</span>
           </button>
           <button type="button" class="quick-pill" onclick="window.app.fillCredentials('almacenero', 'almacen123')">
             <span>📦 Almacén</span>
-            <span class="pill-role">Stock & Kárdex</span>
+            <span class="pill-role">Kárdex</span>
+          </button>
+          <button type="button" class="quick-pill" onclick="window.app.fillCredentials('compras', 'compras123')">
+            <span>🛍️ Compras</span>
+            <span class="pill-role">Proveedores</span>
+          </button>
+          <button type="button" class="quick-pill" onclick="window.app.fillCredentials('gerente', 'gerente123')">
+            <span>📊 Gerente</span>
+            <span class="pill-role">Utilidades</span>
           </button>
         </div>
       </div>
     </div>
   </div>
 
+  <!-- ==================== CONTENEDOR PRINCIPAL DE LA APP ==================== -->
   <div class="app-container">
+    
     <!-- ==================== SIDEBAR ==================== -->
-    <aside class="sidebar">
+    <aside class="sidebar" id="mainSidebar">
       <div class="sidebar-header">
-        <div class="brand-icon">P</div>
+        <div class="brand-icon">PJ</div>
         <div class="brand-info">
-          <h1>Plastiquería Jireh</h1>
-          <p>Descartables & Plásticos</p>
+          <h1>PLASTIQUERÍA JIREH</h1>
+          <p>Distribuidora & POS</p>
         </div>
       </div>
 
-      <nav class="sidebar-nav">
-        <a class="nav-item active" data-view="dashboard" id="nav-dashboard">
+      <nav class="sidebar-nav" id="sidebarNav">
+        <!-- PRINCIPAL -->
+        <div class="nav-category" data-category="principal">PRINCIPAL</div>
+        <a class="nav-item active" data-view="dashboard" id="nav-dashboard" data-permission="DASHBOARD_VER">
           <span class="nav-icon">📊</span>
           <span>Dashboard</span>
         </a>
-        <a class="nav-item" data-view="inventario" id="nav-inventario">
-          <span class="nav-icon">📦</span>
-          <span>Inventario & Stock</span>
-        </a>
-        <a class="nav-item" data-view="ventas" id="nav-ventas">
-          <span class="nav-icon">💳</span>
+        <a class="nav-item" data-view="pos" id="nav-pos" data-permission="VENTA_CREAR">
+          <span class="nav-icon">⚡</span>
           <span>Punto de Venta (POS)</span>
         </a>
-        <a class="nav-item" data-view="clientes" id="nav-clientes">
+
+        <!-- VENTAS -->
+        <div class="nav-category" data-category="ventas">VENTAS</div>
+        <a class="nav-item" data-view="ventas" id="nav-ventas" data-permission="VENTA_VER">
+          <span class="nav-icon">🧾</span>
+          <span>Historial de Ventas</span>
+        </a>
+        <a class="nav-item" data-view="cotizaciones" id="nav-cotizaciones" data-permission="COTIZACION_VER">
+          <span class="nav-icon">📝</span>
+          <span>Cotizaciones</span>
+        </a>
+        <a class="nav-item" data-view="devoluciones" id="nav-devoluciones" data-permission="VENTA_DEVOLVER">
+          <span class="nav-icon">↩️</span>
+          <span>Devoluciones</span>
+        </a>
+        <a class="nav-item" data-view="clientes" id="nav-clientes" data-permission="CLIENTE_VER">
           <span class="nav-icon">👥</span>
           <span>Clientes</span>
         </a>
-        <a class="nav-item" data-view="movimientos" id="nav-movimientos">
+
+        <!-- INVENTARIO -->
+        <div class="nav-category" data-category="inventario">INVENTARIO</div>
+        <a class="nav-item" data-view="inventario" id="nav-inventario" data-permission="PRODUCTO_VER">
+          <span class="nav-icon">📦</span>
+          <span>Productos & Presentaciones</span>
+        </a>
+        <a class="nav-item" data-view="categorias" id="nav-categorias" data-permission="PRODUCTO_VER">
+          <span class="nav-icon">🏷️</span>
+          <span>Categorías & Marcas</span>
+        </a>
+        <a class="nav-item" data-view="movimientos" id="nav-movimientos" data-permission="INVENTARIO_VER">
           <span class="nav-icon">🔄</span>
-          <span>Movimientos / Kárdex</span>
+          <span>Movimientos de Stock</span>
+        </a>
+        <a class="nav-item" data-view="kardex" id="nav-kardex" data-permission="KARDEX_VER">
+          <span class="nav-icon">📑</span>
+          <span>Kárdex Valorado</span>
+        </a>
+
+        <!-- COMPRAS -->
+        <div class="nav-category" data-category="compras">COMPRAS</div>
+        <a class="nav-item" data-view="compras" id="nav-compras" data-permission="COMPRA_VER">
+          <span class="nav-icon">🛒</span>
+          <span>Compras</span>
+        </a>
+        <a class="nav-item" data-view="ordenes" id="nav-ordenes" data-permission="ORDEN_COMPRA_VER">
+          <span class="nav-icon">📋</span>
+          <span>Órdenes de Compra</span>
+        </a>
+        <a class="nav-item" data-view="proveedores" id="nav-proveedores" data-permission="PROVEEDOR_VER">
+          <span class="nav-icon">🏭</span>
+          <span>Proveedores</span>
+        </a>
+
+        <!-- FINANZAS -->
+        <div class="nav-category" data-category="finanzas">FINANZAS</div>
+        <a class="nav-item" data-view="caja" id="nav-caja" data-permission="CAJA_VER">
+          <span class="nav-icon">💵</span>
+          <span>Caja & Arqueo</span>
+        </a>
+        <a class="nav-item" data-view="cuentas-cobrar" id="nav-cuentas-cobrar" data-permission="FINANZAS_VER">
+          <span class="nav-icon">📈</span>
+          <span>Cuentas por Cobrar</span>
+        </a>
+        <a class="nav-item" data-view="cuentas-pagar" id="nav-cuentas-pagar" data-permission="FINANZAS_VER">
+          <span class="nav-icon">📉</span>
+          <span>Cuentas por Pagar</span>
+        </a>
+
+        <!-- REPORTES -->
+        <div class="nav-category" data-category="reportes">REPORTES</div>
+        <a class="nav-item" data-view="reportes" id="nav-reportes" data-permission="REPORTE_VENTAS">
+          <span class="nav-icon">📊</span>
+          <span>Reportes & Rentabilidad</span>
+        </a>
+
+        <!-- SISTEMA -->
+        <div class="nav-category" data-category="sistema">SISTEMA</div>
+        <a class="nav-item" data-view="usuarios" id="nav-usuarios" data-permission="USUARIO_VER">
+          <span class="nav-icon">👤</span>
+          <span>Usuarios</span>
+        </a>
+        <a class="nav-item" data-view="roles" id="nav-roles" data-permission="ROL_GESTIONAR">
+          <span class="nav-icon">🛡️</span>
+          <span>Roles & Permisos (RBAC)</span>
+        </a>
+        <a class="nav-item" data-view="auditoria" id="nav-auditoria" data-permission="AUDITORIA_VER">
+          <span class="nav-icon">📜</span>
+          <span>Auditoría</span>
+        </a>
+        <a class="nav-item" data-view="empresa" id="nav-empresa" data-permission="CONFIG_EMPRESA">
+          <span class="nav-icon">🏢</span>
+          <span>Datos de Empresa</span>
         </a>
       </nav>
 
+      <!-- Sidebar Footer -->
       <div class="sidebar-footer">
         <div class="user-profile">
           <div class="user-profile-info">
             <div class="user-avatar" id="sidebarUserAvatar">AD</div>
             <div class="user-details">
               <h4 id="sidebarUserName">Administrador</h4>
-              <p id="sidebarUserRole"><span class="user-role-badge admin" id="sidebarRoleBadge">ADMINISTRADOR</span></p>
+              <p><span class="user-role-badge admin" id="sidebarRoleBadge">SUPER_ADMIN</span></p>
             </div>
           </div>
           <button class="btn-sidebar-logout" id="btnLogout" title="Cerrar Sesión" onclick="window.app.logout()">
@@ -128,14 +226,17 @@
       </div>
     </aside>
 
-    <!-- ==================== CONTENIDO PRINCIPAL ==================== -->
+    <!-- ==================== WRAPPER PRINCIPAL ==================== -->
     <div class="main-wrapper">
-      <!-- Topbar -->
+      <!-- Topbar Superior -->
       <header class="topbar">
         <div class="topbar-left">
+          <button class="btn-toggle-sidebar" id="btnToggleSidebar" onclick="window.app.toggleSidebar()" title="Colapsar / Expandir Menú">
+            ☰
+          </button>
           <div class="view-title">
             <h2 id="currentViewTitle">Dashboard General</h2>
-            <p id="currentViewSubtitle">Resumen ejecutivo de ventas, inventario y operaciones</p>
+            <p id="currentViewSubtitle">Métricas comerciales, rentabilidad e inventario de Plastiquería Jireh</p>
           </div>
         </div>
 
@@ -143,60 +244,127 @@
           <div class="connection-status" id="backendStatusBadge">
             <span class="status-dot"></span> Verificando conexión...
           </div>
-          <button class="btn-primary" onclick="window.app.switchView('ventas')">
-            <span>⚡</span> Nueva Venta
+          <button class="btn-primary" onclick="window.app.switchView('pos')">
+            <span>⚡</span> Punto de Venta (POS)
           </button>
         </div>
       </header>
 
-      <!-- Vistas SPA -->
+      <!-- Área de Contenido SPA -->
       <main class="content-area">
-        
-        <!-- 1. VISTA DASHBOARD -->
+
+        <!-- ==================== 1. VISTA DASHBOARD ==================== -->
         <section id="view-dashboard" class="view-section active">
-          <!-- KPIs -->
+          <!-- KPIs Principales -->
           <div class="kpi-grid">
             <div class="kpi-card">
               <div class="kpi-icon-wrap purple">💰</div>
               <div class="kpi-info">
-                <h3>Total Ventas</h3>
+                <h3>Ventas de Hoy</h3>
                 <div class="kpi-value" id="kpiTotalVentas">S/ 0.00</div>
-                <div class="kpi-subtext">Ingresos acumulados</div>
+                <div class="kpi-subtext">Ingresos caja día</div>
               </div>
             </div>
             <div class="kpi-card">
-              <div class="kpi-icon-wrap green">📦</div>
+              <div class="kpi-icon-wrap green">📈</div>
               <div class="kpi-info">
-                <h3>Total Productos</h3>
-                <div class="kpi-value" id="kpiTotalProductos">0</div>
-                <div class="kpi-subtext">Artículos registrados</div>
+                <h3>Ventas del Mes</h3>
+                <div class="kpi-value" id="kpiVentasMes">S/ 0.00</div>
+                <div class="kpi-subtext">Facturación mensual</div>
+              </div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-icon-wrap blue">💵</div>
+              <div class="kpi-info">
+                <h3>Utilidad Bruta Estimada</h3>
+                <div class="kpi-value" id="kpiUtilidadMes" style="color:var(--success);">S/ 0.00</div>
+                <div class="kpi-subtext">Ingresos - Costos de mercadería</div>
               </div>
             </div>
             <div class="kpi-card">
               <div class="kpi-icon-wrap amber">⚠️</div>
               <div class="kpi-info">
-                <h3>Alertas de Stock</h3>
+                <h3>Stock Bajo / Crítico</h3>
                 <div class="kpi-value" id="kpiStockAlerta" style="color:var(--warning);">0</div>
-                <div class="kpi-subtext">Existencias bajo el mínimo</div>
+                <div class="kpi-subtext">Requiere abastecimiento</div>
               </div>
             </div>
             <div class="kpi-card">
-              <div class="kpi-icon-wrap blue">👥</div>
+              <div class="kpi-icon-wrap purple">📦</div>
               <div class="kpi-info">
-                <h3>Clientes Activos</h3>
-                <div class="kpi-value" id="kpiTotalClientes">0</div>
-                <div class="kpi-subtext">Directorio comercial</div>
+                <h3>Inventario Valorado</h3>
+                <div class="kpi-value" id="kpiInventarioValor">S/ 0.00</div>
+                <div class="kpi-subtext">Costo total en almacén</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Gráfico y Desglose de Métodos de Pago -->
+          <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: 1.5rem; margin-bottom: 1.5rem;">
+            <!-- Distribución de Cobro -->
+            <div class="card-panel">
+              <div class="panel-header">
+                <div class="panel-title">💳 Distribución de Cobros por Método</div>
+                <span class="badge badge-info">Tiempo Real</span>
+              </div>
+              <div style="display:flex; flex-direction:column; gap: 1rem; padding: 0.5rem 0;">
+                <div>
+                  <div style="display:flex; justify-content:space-between; font-size:0.85rem; font-weight:600; margin-bottom:0.25rem;">
+                    <span>💵 Efectivo en Caja</span>
+                    <span id="pctEfectivo">45%</span>
+                  </div>
+                  <div style="height:10px; border-radius:5px; background:#e2e8f0; overflow:hidden;">
+                    <div id="barEfectivo" style="width:45%; height:100%; background:var(--success);"></div>
+                  </div>
+                </div>
+                <div>
+                  <div style="display:flex; justify-content:space-between; font-size:0.85rem; font-weight:600; margin-bottom:0.25rem;">
+                    <span>📱 Billetera Digital (Yape / Plin)</span>
+                    <span id="pctDigital">40%</span>
+                  </div>
+                  <div style="height:10px; border-radius:5px; background:#e2e8f0; overflow:hidden;">
+                    <div id="barDigital" style="width:40%; height:100%; background:var(--primary);"></div>
+                  </div>
+                </div>
+                <div>
+                  <div style="display:flex; justify-content:space-between; font-size:0.85rem; font-weight:600; margin-bottom:0.25rem;">
+                    <span>💳 Tarjeta & Transferencia</span>
+                    <span id="pctOtros">15%</span>
+                  </div>
+                  <div style="height:10px; border-radius:5px; background:#e2e8f0; overflow:hidden;">
+                    <div id="barOtros" style="width:15%; height:100%; background:var(--info);"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Resumen de Créditos Pendientes -->
+            <div class="card-panel">
+              <div class="panel-header">
+                <div class="panel-title">⚖️ Balance de Cuentas Corrientes</div>
+              </div>
+              <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 1rem; padding: 0.75rem 0;">
+                <div style="background:#f8fafc; border:1px solid #e2e8f0; padding:1.25rem; border-radius:var(--radius-md);">
+                  <div style="font-size:0.75rem; font-weight:700; color:var(--text-muted); text-transform:uppercase;">Cuentas por Cobrar</div>
+                  <div style="font-size:1.4rem; font-weight:800; color:var(--primary); margin:0.35rem 0;" id="dashCuentasCobrar">S/ 0.00</div>
+                  <div style="font-size:0.75rem; color:var(--text-muted);">Créditos a clientes</div>
+                </div>
+                <div style="background:#f8fafc; border:1px solid #e2e8f0; padding:1.25rem; border-radius:var(--radius-md);">
+                  <div style="font-size:0.75rem; font-weight:700; color:var(--text-muted); text-transform:uppercase;">Cuentas por Pagar</div>
+                  <div style="font-size:1.4rem; font-weight:800; color:var(--danger); margin:0.35rem 0;" id="dashCuentasPagar">S/ 0.00</div>
+                  <div style="font-size:0.75rem; color:var(--text-muted);">Deuda a proveedores</div>
+                </div>
               </div>
             </div>
           </div>
 
           <!-- Tablas Resumen en Dashboard -->
-          <div style="display:grid;grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 1.5rem;">
-            <!-- Alertas de Stock -->
+          <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 1.5rem;">
+            <!-- Alertas de Stock Bajo -->
             <div class="card-panel">
               <div class="panel-header">
                 <div class="panel-title">🚨 Productos con Stock Bajo / Crítico</div>
-                <button class="btn-secondary" onclick="window.app.switchView('inventario')">Ver Todo el Catálogo</button>
+                <button class="btn-secondary" onclick="window.app.switchView('inventario')">Ver Todo</button>
               </div>
               <div class="table-responsive">
                 <table class="data-table">
@@ -209,9 +377,7 @@
                       <th>Estado</th>
                     </tr>
                   </thead>
-                  <tbody id="dashboardAlertasStockTable">
-                    <!-- Dinámico -->
-                  </tbody>
+                  <tbody id="dashboardAlertasStockTable"></tbody>
                 </table>
               </div>
             </div>
@@ -219,8 +385,8 @@
             <!-- Últimas Ventas -->
             <div class="card-panel">
               <div class="panel-header">
-                <div class="panel-title">🧾 Últimas Ventas Registradas</div>
-                <button class="btn-secondary" onclick="window.app.switchView('ventas')">Abrir POS</button>
+                <div class="panel-title">🧾 Últimas Ventas Emitidas</div>
+                <button class="btn-secondary" onclick="window.app.switchView('ventas')">Ver Historial</button>
               </div>
               <div class="table-responsive">
                 <table class="data-table">
@@ -233,104 +399,76 @@
                       <th>Estado</th>
                     </tr>
                   </thead>
-                  <tbody id="dashboardUltimasVentasTable">
-                    <!-- Dinámico -->
-                  </tbody>
+                  <tbody id="dashboardUltimasVentasTable"></tbody>
                 </table>
               </div>
             </div>
           </div>
         </section>
 
-        <!-- 2. VISTA INVENTARIO -->
-        <section id="view-inventario" class="view-section">
-          <div class="card-panel">
-            <div class="panel-header">
-              <div class="panel-title">Catálogo Completo de Productos</div>
-              <button class="btn-primary" id="btnAbrirModalNuevoProducto">
-                <span>+</span> Registrar Nuevo Producto
-              </button>
-            </div>
-
-            <!-- Filtros -->
-            <div class="filters-bar">
-              <div class="search-input-wrap">
-                <span class="search-icon">🔍</span>
-                <input type="text" id="searchInventarioInput" placeholder="Buscar por código de barra o nombre de producto...">
-              </div>
-              <select class="select-filter" id="filterCategoriaSelect">
-                <option value="">Todas las Categorías</option>
-              </select>
-            </div>
-
-            <!-- Tabla de Inventario -->
-            <div class="table-responsive">
-              <table class="data-table">
-                <thead>
-                  <tr>
-                    <th>Código</th>
-                    <th>Producto & Categoría</th>
-                    <th>P. Compra</th>
-                    <th>P. Venta</th>
-                    <th>Stock Actual</th>
-                    <th>Stock Mín.</th>
-                    <th>Estado Stock</th>
-                    <th>Acción</th>
-                  </tr>
-                </thead>
-                <tbody id="inventarioTableBody">
-                  <!-- Dinámico -->
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </section>
-
-        <!-- 3. VISTA PUNTO DE VENTA (POS) -->
-        <section id="view-ventas" class="view-section">
+        <!-- ==================== 2. VISTA PUNTO DE VENTA (POS) ==================== -->
+        <section id="view-pos" class="view-section">
           <div class="pos-layout">
-            <!-- Catálogo de Venta Rápida -->
-            <div class="card-panel">
-              <div class="panel-header">
-                <div class="panel-title">Selección Rápida de Productos</div>
-                <div class="search-input-wrap" style="max-width: 280px;">
+            <!-- Catálogo y Búsqueda de Productos -->
+            <div class="card-panel" style="margin-bottom:0;">
+              <div class="panel-header" style="margin-bottom:0.75rem;">
+                <div class="panel-title">Catálogo de Plastiquería & Descartables</div>
+                <div class="search-input-wrap" style="max-width: 320px;">
                   <span class="search-icon">🔍</span>
-                  <input type="text" id="searchPosInput" placeholder="Filtrar producto...">
+                  <input type="text" id="searchPosInput" placeholder="Escanear código de barra o nombre..." autocomplete="off">
                 </div>
               </div>
-              <div class="pos-products-grid" id="posProductsGrid">
-                <!-- Tarjetas dinámicas -->
+
+              <!-- Filtro de Categorías en Barra Rápida -->
+              <div style="display:flex; gap:0.5rem; overflow-x:auto; padding-bottom:0.5rem; margin-bottom:0.75rem;" id="posCategoryPills">
+                <button class="btn-secondary active" onclick="window.app.filterPosByCategory('')" style="font-size:0.75rem; padding:0.35rem 0.75rem;">Todos</button>
               </div>
+
+              <!-- Grid de Tarjetas de Productos -->
+              <div class="pos-products-grid" id="posProductsGrid"></div>
             </div>
 
-            <!-- Panel de Carrito / Factura -->
+            <!-- Carrito de Venta / Facturación -->
             <div class="pos-cart-panel">
               <div class="cart-header">
-                <h4 style="font-weight:700;font-size:1.05rem;">🛒 Orden de Venta</h4>
-                <span class="badge badge-info">Boleta Electrónica</span>
+                <h4 style="font-weight:700; font-size:1.05rem;">🛒 Detalle de Venta</h4>
+                <span class="badge badge-info">Plastiquería Jireh</span>
               </div>
 
-              <!-- Selectores de Cliente y Método de Pago -->
-              <div style="padding:1rem 1.25rem 0.5rem 1.25rem;display:flex;flex-direction:column;gap:0.75rem;">
-                <div class="form-group">
-                  <label>Cliente:</label>
+              <!-- Datos de Cliente y Método de Pago -->
+              <div style="padding: 0.85rem 1rem 0.25rem 1rem; display:flex; flex-direction:column; gap:0.6rem;">
+                <div class="form-group" style="margin-bottom:0;">
+                  <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <label style="margin-bottom:0.2rem;">Cliente:</label>
+                    <button type="button" class="btn-secondary" style="padding:0.15rem 0.45rem; font-size:0.7rem;" onclick="window.app.openModal('modalNuevoCliente')">+ Nuevo</button>
+                  </div>
                   <select class="form-control" id="posClienteSelect"></select>
                 </div>
-                <div class="form-group">
-                  <label>Método de Pago:</label>
-                  <select class="form-control" id="posMetodoPagoSelect"></select>
+                <div class="form-group" style="margin-bottom:0;">
+                  <label style="margin-bottom:0.2rem;">Método de Pago:</label>
+                  <select class="form-control" id="posMetodoPagoSelect" onchange="window.app.onPaymentMethodChange()"></select>
                 </div>
               </div>
 
-              <!-- Lista de ítems -->
-              <div class="cart-items-list" id="cartItemsList">
-                <!-- Dinámico -->
+              <!-- Lista de Ítems en Carrito -->
+              <div class="cart-items-list" id="cartItemsList"></div>
+
+              <!-- Calculadora de Efectivo y Vuelto -->
+              <div class="cash-calc-card" id="posCashCalcCard">
+                <div class="cash-calc-row">
+                  <span style="font-size:0.82rem; font-weight:600; color:var(--text-muted);">Monto Recibido:</span>
+                  <input type="number" step="0.50" id="posMontoRecibido" class="cash-calc-input" placeholder="0.00" oninput="window.app.calcularVuelto()">
+                </div>
+                <div class="cash-calc-row" style="margin-bottom:0;">
+                  <span style="font-size:0.82rem; font-weight:700;">Vuelto a Entregar:</span>
+                  <span class="vuelto-value" id="posVueltoLabel">S/ 0.00</span>
+                </div>
               </div>
 
               <!-- Totales -->
               <div class="cart-totals">
                 <div class="total-row">
-                  <span>Op. Gravada:</span>
+                  <span>Subtotal Gravado:</span>
                   <span id="cartSubtotal">S/ 0.00</span>
                 </div>
                 <div class="total-row">
@@ -338,25 +476,107 @@
                   <span id="cartIgv">S/ 0.00</span>
                 </div>
                 <div class="total-row grand-total">
-                  <span>TOTAL:</span>
+                  <span>TOTAL A PAGAR:</span>
                   <span id="cartTotal">S/ 0.00</span>
                 </div>
-                <button class="btn-checkout" id="btnFinalizarVenta" disabled>
-                  Emitir Boleta & Cobrar
+                <button class="btn-checkout" id="btnFinalizarVenta" disabled onclick="window.app.procesarVenta()">
+                  Emitir Comprobante & Cobrar
                 </button>
               </div>
             </div>
           </div>
         </section>
 
-        <!-- 4. VISTA CLIENTES -->
+        <!-- ==================== 3. VISTA HISTORIAL DE VENTAS ==================== -->
+        <section id="view-ventas" class="view-section">
+          <div class="card-panel">
+            <div class="panel-header">
+              <div class="panel-title">Historial de Ventas & Comprobantes</div>
+              <button class="btn-primary" onclick="window.app.switchView('pos')">+ Nueva Venta (POS)</button>
+            </div>
+            <div class="filters-bar">
+              <div class="search-input-wrap">
+                <span class="search-icon">🔍</span>
+                <input type="text" id="searchVentasInput" placeholder="Buscar por número o cliente...">
+              </div>
+            </div>
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Número</th>
+                    <th>Fecha</th>
+                    <th>Cliente</th>
+                    <th>Método Pago</th>
+                    <th>Total</th>
+                    <th>Estado</th>
+                    <th>Acciones</th>
+                  </tr>
+                </thead>
+                <tbody id="ventasTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================== 4. VISTA COTIZACIONES ==================== -->
+        <section id="view-cotizaciones" class="view-section">
+          <div class="card-panel">
+            <div class="panel-header">
+              <div class="panel-title">Cotizaciones Comerciales (Mayorista / Minorista)</div>
+              <button class="btn-primary" onclick="window.app.openModal('modalNuevaCotizacion')">+ Nueva Cotización</button>
+            </div>
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Número</th>
+                    <th>Fecha</th>
+                    <th>Cliente</th>
+                    <th>Vigencia</th>
+                    <th>Total</th>
+                    <th>Estado</th>
+                    <th>Acción</th>
+                  </tr>
+                </thead>
+                <tbody id="cotizacionesTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================== 5. VISTA DEVOLUCIONES ==================== -->
+        <section id="view-devoluciones" class="view-section">
+          <div class="card-panel">
+            <div class="panel-header">
+              <div class="panel-title">Devoluciones de Ventas & Restitución a Kárdex</div>
+              <button class="btn-primary" onclick="window.app.openModal('modalNuevaDevolucion')">+ Registrar Devolución</button>
+            </div>
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>N° Devolución</th>
+                    <th>Fecha</th>
+                    <th>Venta Asociada</th>
+                    <th>Cliente</th>
+                    <th>Total Devuelto</th>
+                    <th>Motivo</th>
+                    <th>Estado</th>
+                  </tr>
+                </thead>
+                <tbody id="devolucionesTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================== 6. VISTA CLIENTES ==================== -->
         <section id="view-clientes" class="view-section">
           <div class="card-panel">
             <div class="panel-header">
-              <div class="panel-title">Directorio de Clientes y Empresas</div>
-              <button class="btn-primary" id="btnAbrirModalNuevoCliente">
-                <span>+</span> Registrar Nuevo Cliente
-              </button>
+              <div class="panel-title">Directorio de Clientes (Minoristas, Mayoristas, Empresas)</div>
+              <button class="btn-primary" onclick="window.app.openModal('modalNuevoCliente')">+ Nuevo Cliente</button>
             </div>
             <div class="table-responsive">
               <table class="data-table">
@@ -364,25 +584,104 @@
                   <tr>
                     <th>Documento</th>
                     <th>Nombres / Razón Social</th>
+                    <th>Tipo</th>
                     <th>Teléfono</th>
-                    <th>Correo Electrónico</th>
+                    <th>Correo</th>
                     <th>Dirección</th>
                   </tr>
                 </thead>
-                <tbody id="clientesTableBody">
-                  <!-- Dinámico -->
-                </tbody>
+                <tbody id="clientesTableBody"></tbody>
               </table>
             </div>
           </div>
         </section>
 
-        <!-- 5. VISTA MOVIMIENTOS -->
+        <!-- ==================== 7. VISTA INVENTARIO & PRODUCTOS ==================== -->
+        <section id="view-inventario" class="view-section">
+          <div class="card-panel">
+            <div class="panel-header">
+              <div class="panel-title">Catálogo de Productos & Múltiples Presentaciones</div>
+              <button class="btn-primary" onclick="window.app.openModal('modalNuevoProducto')">+ Registrar Producto</button>
+            </div>
+            <div class="filters-bar">
+              <div class="search-input-wrap">
+                <span class="search-icon">🔍</span>
+                <input type="text" id="searchInventarioInput" placeholder="Buscar por código de barra o nombre...">
+              </div>
+              <select class="select-filter" id="filterCategoriaSelect"></select>
+            </div>
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Código</th>
+                    <th>Producto & Marca</th>
+                    <th>Categoría</th>
+                    <th>Presentaciones & Precios</th>
+                    <th>P. Venta Base</th>
+                    <th>Stock Actual</th>
+                    <th>Stock Mín.</th>
+                    <th>Estado</th>
+                    <th>Acción</th>
+                  </tr>
+                </thead>
+                <tbody id="inventarioTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================== 8. VISTA CATEGORÍAS & MARCAS ==================== -->
+        <section id="view-categorias" class="view-section">
+          <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); gap:1.5rem;">
+            <!-- Categorías -->
+            <div class="card-panel">
+              <div class="panel-header">
+                <div class="panel-title">Categorías de Plastiquería</div>
+                <button class="btn-secondary" onclick="window.app.promptCrearCategoria()">+ Nueva Categoría</button>
+              </div>
+              <div class="table-responsive">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>Nombre</th>
+                      <th>Descripción</th>
+                      <th>Estado</th>
+                    </tr>
+                  </thead>
+                  <tbody id="categoriasTableBody"></tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Marcas -->
+            <div class="card-panel">
+              <div class="panel-header">
+                <div class="panel-title">Marcas y Fabricantes</div>
+                <button class="btn-secondary" onclick="window.app.promptCrearMarca()">+ Nueva Marca</button>
+              </div>
+              <div class="table-responsive">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>Marca</th>
+                      <th>Descripción</th>
+                      <th>Estado</th>
+                    </tr>
+                  </thead>
+                  <tbody id="marcasTableBody"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================== 9. VISTA MOVIMIENTOS DE INVENTARIO ==================== -->
         <section id="view-movimientos" class="view-section">
           <div class="card-panel">
             <div class="panel-header">
-              <div class="panel-title">Kárdex de Movimientos de Inventario</div>
-              <span class="badge badge-info">Auditoría en tiempo real</span>
+              <div class="panel-title">Trazabilidad de Movimientos de Stock</div>
+              <span class="badge badge-info">Auditoría Permanente</span>
             </div>
             <div class="table-responsive">
               <table class="data-table">
@@ -391,16 +690,381 @@
                     <th>Fecha y Hora</th>
                     <th>Tipo</th>
                     <th>Producto</th>
-                    <th>Cant.</th>
+                    <th>Cantidad</th>
                     <th>Stock (Ant ➔ Post)</th>
                     <th>Motivo de Operación</th>
                   </tr>
                 </thead>
-                <tbody id="movimientosTableBody">
-                  <!-- Dinámico -->
-                </tbody>
+                <tbody id="movimientosTableBody"></tbody>
               </table>
             </div>
+          </div>
+        </section>
+
+        <!-- ==================== 10. VISTA KÁRDEX ==================== -->
+        <section id="view-kardex" class="view-section">
+          <div class="card-panel">
+            <div class="panel-header">
+              <div class="panel-title">Kárdex Físico y Valorado por Producto</div>
+              <div style="display:flex; gap:0.5rem; align-items:center;">
+                <label style="font-size:0.8rem; font-weight:600;">Producto:</label>
+                <select class="form-control" id="kardexProductoSelect" style="max-width:280px;" onchange="window.app.cargarKardexProducto()"></select>
+                <button class="btn-secondary" onclick="window.print()">🖨️ Exportar</button>
+              </div>
+            </div>
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Fecha</th>
+                    <th>Tipo Operación</th>
+                    <th>Documento / Motivo</th>
+                    <th style="color:var(--success);">Entrada</th>
+                    <th style="color:var(--danger);">Salida</th>
+                    <th style="font-weight:800;">Saldo Stock</th>
+                  </tr>
+                </thead>
+                <tbody id="kardexTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================== 11. VISTA COMPRAS ==================== -->
+        <section id="view-compras" class="view-section">
+          <div class="card-panel">
+            <div class="panel-header">
+              <div class="panel-title">Registro de Compras a Fabricantes / Proveedores</div>
+              <button class="btn-primary" onclick="window.app.openModal('modalNuevaCompra')">+ Registrar Compra</button>
+            </div>
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>N° Compra</th>
+                    <th>Fecha</th>
+                    <th>Proveedor</th>
+                    <th>RUC</th>
+                    <th>Total</th>
+                    <th>Estado</th>
+                  </tr>
+                </thead>
+                <tbody id="comprasTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================== 12. VISTA ÓRDENES DE COMPRA ==================== -->
+        <section id="view-ordenes" class="view-section">
+          <div class="card-panel">
+            <div class="panel-header">
+              <div class="panel-title">Órdenes de Compra (Reabastecimiento)</div>
+              <button class="btn-primary" onclick="window.app.openModal('modalNuevaOrdenCompra')">+ Nueva Orden</button>
+            </div>
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>N° Orden</th>
+                    <th>Fecha Emisión</th>
+                    <th>Fecha Entrega</th>
+                    <th>Proveedor</th>
+                    <th>Total Estimado</th>
+                    <th>Estado</th>
+                    <th>Acción</th>
+                  </tr>
+                </thead>
+                <tbody id="ordenesTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================== 13. VISTA PROVEEDORES ==================== -->
+        <section id="view-proveedores" class="view-section">
+          <div class="card-panel">
+            <div class="panel-header">
+              <div class="panel-title">Proveedores de Empaques y Plásticos</div>
+              <button class="btn-primary" onclick="window.app.openModal('modalNuevoProveedor')">+ Nuevo Proveedor</button>
+            </div>
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>RUC</th>
+                    <th>Razón Social</th>
+                    <th>Contacto</th>
+                    <th>Teléfono</th>
+                    <th>Correo</th>
+                    <th>Dirección</th>
+                  </tr>
+                </thead>
+                <tbody id="proveedoresTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================== 14. VISTA CAJA & ARQUEO ==================== -->
+        <section id="view-caja" class="view-section">
+          <!-- Banner de Estado de Caja -->
+          <div class="caja-status-banner">
+            <div class="caja-metric-item">
+              <span class="caja-metric-label">Estado de Turno</span>
+              <span class="caja-metric-value" id="cajaEstadoLabel" style="color:var(--primary);">ABIERTA</span>
+            </div>
+            <div class="caja-metric-item">
+              <span class="caja-metric-label">Fondo Inicial</span>
+              <span class="caja-metric-value" id="cajaMontoInicialLabel">S/ 0.00</span>
+            </div>
+            <div class="caja-metric-item">
+              <span class="caja-metric-label">Ventas Efectivo</span>
+              <span class="caja-metric-value" id="cajaVentasEfectivoLabel" style="color:var(--success);">S/ 0.00</span>
+            </div>
+            <div class="caja-metric-item">
+              <span class="caja-metric-label">Ventas Digitales</span>
+              <span class="caja-metric-value" id="cajaVentasDigitalLabel" style="color:var(--info);">S/ 0.00</span>
+            </div>
+            <div class="caja-metric-item">
+              <span class="caja-metric-label">Efectivo Esperado</span>
+              <span class="caja-metric-value" id="cajaMontoEsperadoLabel">S/ 0.00</span>
+            </div>
+          </div>
+
+          <div class="card-panel">
+            <div class="panel-header">
+              <div class="panel-title">Movimientos y Arqueo de la Caja Activa</div>
+              <div style="display:flex; gap:0.5rem;">
+                <button class="btn-secondary" onclick="window.app.openModal('modalMovimientoCaja')">💸 Registrar Ingreso / Egreso</button>
+                <button class="btn-primary" id="btnCajaAccionPrincipal" onclick="window.app.handleCajaAccionPrincipal()">🔒 Cerrar Turno & Arqueo</button>
+              </div>
+            </div>
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Fecha y Hora</th>
+                    <th>Tipo</th>
+                    <th>Concepto</th>
+                    <th>Monto</th>
+                  </tr>
+                </thead>
+                <tbody id="cajaMovimientosTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================== 15. VISTA CUENTAS POR COBRAR ==================== -->
+        <section id="view-cuentas-cobrar" class="view-section">
+          <div class="card-panel">
+            <div class="panel-header">
+              <div class="panel-title">Cuentas por Cobrar (Ventas a Crédito)</div>
+            </div>
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Venta</th>
+                    <th>Cliente</th>
+                    <th>Total Crédito</th>
+                    <th>Monto Pagado</th>
+                    <th>Saldo Pendiente</th>
+                    <th>Vencimiento</th>
+                    <th>Estado</th>
+                    <th>Acción</th>
+                  </tr>
+                </thead>
+                <tbody id="cuentasCobrarTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================== 16. VISTA CUENTAS POR PAGAR ==================== -->
+        <section id="view-cuentas-pagar" class="view-section">
+          <div class="card-panel">
+            <div class="panel-header">
+              <div class="panel-title">Cuentas por Pagar (Compras a Crédito)</div>
+            </div>
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Compra</th>
+                    <th>Proveedor</th>
+                    <th>Total Deuda</th>
+                    <th>Monto Pagado</th>
+                    <th>Saldo Pendiente</th>
+                    <th>Vencimiento</th>
+                    <th>Estado</th>
+                    <th>Acción</th>
+                  </tr>
+                </thead>
+                <tbody id="cuentasPagarTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================== 17. VISTA REPORTES & RENTABILIDAD ==================== -->
+        <section id="view-reportes" class="view-section">
+          <div class="card-panel">
+            <div class="panel-header">
+              <div class="panel-title">Centro de Reportes y Análisis Financiero</div>
+              <button class="btn-secondary" onclick="window.print()">🖨️ Imprimir Reporte</button>
+            </div>
+            <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap:1.5rem; margin-bottom:1.5rem;">
+              <div style="background:#f8fafc; border:1px solid #e2e8f0; padding:1.25rem; border-radius:var(--radius-md);">
+                <div style="font-size:0.75rem; font-weight:700; color:var(--text-muted);">INGRESOS POR VENTAS</div>
+                <div style="font-size:1.6rem; font-weight:800; color:var(--primary);" id="repIngresosVentas">S/ 0.00</div>
+              </div>
+              <div style="background:#f8fafc; border:1px solid #e2e8f0; padding:1.25rem; border-radius:var(--radius-md);">
+                <div style="font-size:0.75rem; font-weight:700; color:var(--text-muted);">COSTO DE MERCADERÍA VENDIDA</div>
+                <div style="font-size:1.6rem; font-weight:800; color:var(--text-muted);" id="repCostoMercaderia">S/ 0.00</div>
+              </div>
+              <div style="background:#f8fafc; border:1px solid #e2e8f0; padding:1.25rem; border-radius:var(--radius-md);">
+                <div style="font-size:0.75rem; font-weight:700; color:var(--text-muted);">UTILIDAD BRUTA GENERADA</div>
+                <div style="font-size:1.6rem; font-weight:800; color:var(--success);" id="repUtilidadBruta">S/ 0.00</div>
+              </div>
+            </div>
+
+            <h4 style="font-weight:700; margin-bottom:0.75rem;">Top 5 Productos de Mayor Rotación</h4>
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Ranking</th>
+                    <th>Código</th>
+                    <th>Producto</th>
+                    <th>Unidades Vendidas</th>
+                    <th>Monto Generado</th>
+                  </tr>
+                </thead>
+                <tbody id="repTopProductosTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================== 18. VISTA USUARIOS ==================== -->
+        <section id="view-usuarios" class="view-section">
+          <div class="card-panel">
+            <div class="panel-header">
+              <div class="panel-title">Gestión de Usuarios del Sistema</div>
+              <button class="btn-primary" onclick="window.app.openModal('modalNuevoUsuario')">+ Nuevo Usuario</button>
+            </div>
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Usuario</th>
+                    <th>Nombres y Apellidos</th>
+                    <th>Correo</th>
+                    <th>Rol Asignado</th>
+                    <th>Estado</th>
+                    <th>Acciones</th>
+                  </tr>
+                </thead>
+                <tbody id="usuariosTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================== 19. VISTA ROLES & PERMISOS (RBAC) ==================== -->
+        <section id="view-roles" class="view-section">
+          <div class="card-panel">
+            <div class="panel-header">
+              <div class="panel-title">Matriz de Roles y Privilegios Granulares (RBAC)</div>
+              <div style="display:flex; gap:0.5rem; align-items:center;">
+                <label style="font-size:0.85rem; font-weight:600;">Seleccionar Rol:</label>
+                <select class="form-control" id="rbacRolSelect" style="max-width:220px;" onchange="window.app.cargarPermisosDeRol()"></select>
+                <button class="btn-primary" onclick="window.app.guardarPermisosRol()">💾 Guardar Permisos</button>
+              </div>
+            </div>
+            <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:1rem;">
+              Seleccione los permisos que aplican para este rol. Los cambios impactan inmediatamente en la interfaz y en el backend (@PreAuthorize).
+            </p>
+            <div class="rbac-grid" id="rbacGridContainer"></div>
+          </div>
+        </section>
+
+        <!-- ==================== 20. VISTA AUDITORÍA ==================== -->
+        <section id="view-auditoria" class="view-section">
+          <div class="card-panel">
+            <div class="panel-header">
+              <div class="panel-title">Auditoría del Sistema (Logs de Operaciones)</div>
+              <span class="badge badge-info">Registro Inmutable</span>
+            </div>
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Fecha y Hora</th>
+                    <th>Usuario</th>
+                    <th>Módulo</th>
+                    <th>Acción</th>
+                    <th>Descripción</th>
+                    <th>IP</th>
+                  </tr>
+                </thead>
+                <tbody id="auditoriaTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================== 21. VISTA CONFIGURACIÓN DE EMPRESA ==================== -->
+        <section id="view-empresa" class="view-section">
+          <div class="card-panel" style="max-width: 780px;">
+            <div class="panel-header">
+              <div class="panel-title">Configuración de Plastiquería Jireh & Comprobantes</div>
+            </div>
+            <form id="formEmpresaConfig" onsubmit="event.preventDefault(); window.app.guardarEmpresa();">
+              <div class="form-grid">
+                <div class="form-group col-span-2">
+                  <label for="cfgRazonSocial">Razón Social *</label>
+                  <input type="text" id="cfgRazonSocial" class="form-control" required>
+                </div>
+                <div class="form-group">
+                  <label for="cfgNombreComercial">Nombre Comercial *</label>
+                  <input type="text" id="cfgNombreComercial" class="form-control" required>
+                </div>
+                <div class="form-group">
+                  <label for="cfgRuc">RUC *</label>
+                  <input type="text" id="cfgRuc" class="form-control" required>
+                </div>
+                <div class="form-group col-span-2">
+                  <label for="cfgDireccion">Dirección Comercial *</label>
+                  <input type="text" id="cfgDireccion" class="form-control" required>
+                </div>
+                <div class="form-group">
+                  <label for="cfgTelefono">Teléfono / WhatsApp</label>
+                  <input type="text" id="cfgTelefono" class="form-control">
+                </div>
+                <div class="form-group">
+                  <label for="cfgCorreo">Correo Electrónico</label>
+                  <input type="email" id="cfgCorreo" class="form-control">
+                </div>
+                <div class="form-group">
+                  <label for="cfgMoneda">Símbolo de Moneda</label>
+                  <input type="text" id="cfgMoneda" class="form-control" value="S/">
+                </div>
+                <div class="form-group">
+                  <label for="cfgIgv">I.G.V. (%)</label>
+                  <input type="number" step="0.01" id="cfgIgv" class="form-control" value="18.00">
+                </div>
+                <div class="form-group col-span-2">
+                  <label for="cfgMensajeTicket">Mensaje al Pie del Ticket</label>
+                  <textarea id="cfgMensajeTicket" class="form-control" rows="2"></textarea>
+                </div>
+              </div>
+              <div style="margin-top:1.25rem;">
+                <button type="submit" class="btn-primary">💾 Guardar Configuración</button>
+              </div>
+            </form>
           </div>
         </section>
 
@@ -408,23 +1072,29 @@
     </div>
   </div>
 
-  <!-- ==================== MODAL NUEVO PRODUCTO ==================== -->
+  <!-- ==================== MODALES DEL SISTEMA ==================== -->
+
+  <!-- Modal Nuevo Producto con Presentaciones -->
   <div class="modal-overlay" id="modalNuevoProducto">
-    <div class="modal-dialog">
+    <div class="modal-dialog" style="max-width: 650px;">
       <div class="modal-header">
-        <h3>Registrar Nuevo Producto</h3>
+        <h3>Registrar Nuevo Producto de Plastiquería</h3>
         <button class="btn-close-modal">✕</button>
       </div>
-      <form id="formNuevoProducto">
+      <form id="formNuevoProducto" onsubmit="event.preventDefault(); window.app.guardarNuevoProducto();">
         <div class="modal-body">
           <div class="form-grid">
             <div class="form-group">
-              <label for="modalProdCodigo">Código de Barra / SKU *</label>
-              <input type="text" id="modalProdCodigo" class="form-control" placeholder="Ej. PLAS-009" required>
+              <label for="modalProdCodigo">Código Interno / SKU *</label>
+              <input type="text" id="modalProdCodigo" class="form-control" placeholder="Ej. PLAS-010" required>
             </div>
             <div class="form-group">
+              <label for="modalProdBarras">Código de Barras</label>
+              <input type="text" id="modalProdBarras" class="form-control" placeholder="775...">
+            </div>
+            <div class="form-group col-span-2">
               <label for="modalProdNombre">Nombre del Producto *</label>
-              <input type="text" id="modalProdNombre" class="form-control" placeholder="Ej. Taper Térmico CT4 con tapa" required>
+              <input type="text" id="modalProdNombre" class="form-control" placeholder="Ej. Vaso 7 oz descartable" required>
             </div>
             <div class="form-group">
               <label for="modalProdCategoria">Categoría *</label>
@@ -435,19 +1105,19 @@
               <select id="modalProdMarca" class="form-control" required></select>
             </div>
             <div class="form-group">
-              <label for="modalProdUnidad">Unidad de Medida *</label>
+              <label for="modalProdUnidad">Unidad Base *</label>
               <select id="modalProdUnidad" class="form-control" required></select>
             </div>
             <div class="form-group">
-              <label for="modalProdUbicacion">Ubicación en Almacén</label>
-              <input type="text" id="modalProdUbicacion" class="form-control" placeholder="Ej. Pasillo A - Estante 1">
+              <label for="modalProdUbicacion">Ubicación Almacén</label>
+              <input type="text" id="modalProdUbicacion" class="form-control" placeholder="Ej. Estante 2">
             </div>
             <div class="form-group">
-              <label for="modalProdPrecioCompra">Precio Compra (S/) *</label>
+              <label for="modalProdPrecioCompra">Precio Compra Base (S/) *</label>
               <input type="number" step="0.01" min="0" id="modalProdPrecioCompra" class="form-control" placeholder="0.00" required>
             </div>
             <div class="form-group">
-              <label for="modalProdPrecioVenta">Precio Venta (S/) *</label>
+              <label for="modalProdPrecioVenta">Precio Venta Base (S/) *</label>
               <input type="number" step="0.01" min="0" id="modalProdPrecioVenta" class="form-control" placeholder="0.00" required>
             </div>
             <div class="form-group">
@@ -468,47 +1138,47 @@
     </div>
   </div>
 
-  <!-- ==================== MODAL NUEVO CLIENTE ==================== -->
+  <!-- Modal Nuevo Cliente -->
   <div class="modal-overlay" id="modalNuevoCliente">
     <div class="modal-dialog">
       <div class="modal-header">
-        <h3>Registrar Nuevo Cliente</h3>
+        <h3>Registrar Cliente</h3>
         <button class="btn-close-modal">✕</button>
       </div>
-      <form id="formNuevoCliente">
+      <form id="formNuevoCliente" onsubmit="event.preventDefault(); window.app.guardarNuevoCliente();">
         <div class="modal-body">
           <div class="form-grid">
             <div class="form-group">
-              <label for="modalClienteTipoDoc">Tipo Documento *</label>
+              <label for="modalClienteTipoDoc">Tipo Documento</label>
               <select id="modalClienteTipoDoc" class="form-control">
                 <option value="DNI">DNI</option>
                 <option value="RUC">RUC</option>
-                <option value="CE">Carnet Extranjería</option>
+                <option value="OTRO">Sin Documento / Final</option>
               </select>
             </div>
             <div class="form-group">
-              <label for="modalClienteNumDoc">Número de Documento *</label>
-              <input type="text" id="modalClienteNumDoc" class="form-control" placeholder="8 o 11 dígitos" required>
-            </div>
-            <div class="form-group">
-              <label for="modalClienteNombres">Nombres / Contacto *</label>
-              <input type="text" id="modalClienteNombres" class="form-control" required>
-            </div>
-            <div class="form-group">
-              <label for="modalClienteApellidos">Apellidos / Razón Social *</label>
-              <input type="text" id="modalClienteApellidos" class="form-control" required>
-            </div>
-            <div class="form-group">
-              <label for="modalClienteTelefono">Teléfono / Celular</label>
-              <input type="text" id="modalClienteTelefono" class="form-control" placeholder="999888777">
-            </div>
-            <div class="form-group">
-              <label for="modalClienteCorreo">Correo Electrónico</label>
-              <input type="email" id="modalClienteCorreo" class="form-control" placeholder="correo@ejemplo.com">
+              <label for="modalClienteNumDoc">N° Documento</label>
+              <input type="text" id="modalClienteNumDoc" class="form-control" placeholder="DNI o RUC">
             </div>
             <div class="form-group col-span-2">
-              <label for="modalClienteDireccion">Dirección Fiscal / Entrega</label>
-              <input type="text" id="modalClienteDireccion" class="form-control" placeholder="Av. / Jr. / Calle">
+              <label for="modalClienteNombre">Nombres o Razón Social *</label>
+              <input type="text" id="modalClienteNombre" class="form-control" required>
+            </div>
+            <div class="form-group">
+              <label for="modalClienteTipo">Tipo de Cliente</label>
+              <select id="modalClienteTipo" class="form-control">
+                <option value="MINORISTA">Minorista</option>
+                <option value="MAYORISTA">Mayorista</option>
+                <option value="EMPRESA">Empresa / Restaurante</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="modalClienteTelefono">Teléfono / WhatsApp</label>
+              <input type="text" id="modalClienteTelefono" class="form-control">
+            </div>
+            <div class="form-group col-span-2">
+              <label for="modalClienteDireccion">Dirección Fiscal / Despacho</label>
+              <input type="text" id="modalClienteDireccion" class="form-control">
             </div>
           </div>
         </div>
@@ -520,29 +1190,415 @@
     </div>
   </div>
 
-  <!-- ==================== MODAL TICKET DE VENTA ==================== -->
-  <div class="modal-overlay" id="modalTicket">
-    <div class="modal-dialog" style="max-width: 420px;">
+  <!-- Modal Nuevo Proveedor -->
+  <div class="modal-overlay" id="modalNuevoProveedor">
+    <div class="modal-dialog">
       <div class="modal-header">
-        <h3>Comprobante Emitido</h3>
+        <h3>Registrar Proveedor</h3>
         <button class="btn-close-modal">✕</button>
       </div>
-      <div class="modal-body" id="ticketModalContent">
-        <!-- Renderizado dinámico del recibo -->
+      <form id="formNuevoProveedor" onsubmit="event.preventDefault(); window.app.guardarNuevoProveedor();">
+        <div class="modal-body">
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="modalProvRuc">RUC *</label>
+              <input type="text" id="modalProvRuc" class="form-control" placeholder="11 dígitos" required>
+            </div>
+            <div class="form-group">
+              <label for="modalProvRazon">Razón Social *</label>
+              <input type="text" id="modalProvRazon" class="form-control" required>
+            </div>
+            <div class="form-group">
+              <label for="modalProvContacto">Persona de Contacto</label>
+              <input type="text" id="modalProvContacto" class="form-control">
+            </div>
+            <div class="form-group">
+              <label for="modalProvTelefono">Teléfono</label>
+              <input type="text" id="modalProvTelefono" class="form-control">
+            </div>
+            <div class="form-group col-span-2">
+              <label for="modalProvDireccion">Dirección Planta / Almacén</label>
+              <input type="text" id="modalProvDireccion" class="form-control">
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-secondary btn-close-modal">Cancelar</button>
+          <button type="submit" class="btn-primary">Guardar Proveedor</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal Nueva Cotización -->
+  <div class="modal-overlay" id="modalNuevaCotizacion">
+    <div class="modal-dialog" style="max-width: 580px;">
+      <div class="modal-header">
+        <h3>Nueva Cotización de Plastiquería</h3>
+        <button class="btn-close-modal">✕</button>
       </div>
+      <form id="formNuevaCotizacion" onsubmit="event.preventDefault(); window.app.crearNuevaCotizacion();">
+        <div class="modal-body">
+          <div class="form-grid">
+            <div class="form-group col-span-2">
+              <label>Cliente:</label>
+              <select id="modalCotCliente" class="form-control" required></select>
+            </div>
+            <div class="form-group">
+              <label>Producto a Cotizar:</label>
+              <select id="modalCotProducto" class="form-control" required></select>
+            </div>
+            <div class="form-group">
+              <label>Cantidad (Presentación):</label>
+              <input type="number" min="1" id="modalCotCantidad" class="form-control" value="5" required>
+            </div>
+            <div class="form-group col-span-2">
+              <label>Observaciones:</label>
+              <input type="text" id="modalCotObs" class="form-control" placeholder="Válido por 15 días, entrega en tienda">
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-secondary btn-close-modal">Cancelar</button>
+          <button type="submit" class="btn-primary">Generar Cotización</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal Nueva Devolución -->
+  <div class="modal-overlay" id="modalNuevaDevolucion">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3>Registrar Devolución de Venta</h3>
+        <button class="btn-close-modal">✕</button>
+      </div>
+      <form id="formNuevaDevolucion" onsubmit="event.preventDefault(); window.app.procesarDevolucion();">
+        <div class="modal-body">
+          <div class="form-grid">
+            <div class="form-group col-span-2">
+              <label>Seleccionar Venta:</label>
+              <select id="modalDevVenta" class="form-control" required></select>
+            </div>
+            <div class="form-group">
+              <label>Cantidad a Devolver:</label>
+              <input type="number" min="1" id="modalDevCantidad" class="form-control" value="1" required>
+            </div>
+            <div class="form-group">
+              <label>Monto a Restituir (S/):</label>
+              <input type="number" step="0.01" min="0" id="modalDevMonto" class="form-control" value="24.00" required>
+            </div>
+            <div class="form-group col-span-2">
+              <label>Motivo de la Devolución:</label>
+              <input type="text" id="modalDevMotivo" class="form-control" placeholder="Ej: Mercadería defectuosa o error de pedido" required>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-secondary btn-close-modal">Cancelar</button>
+          <button type="submit" class="btn-primary">Aprobar Devolución & Restituir Stock</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal Nueva Compra -->
+  <div class="modal-overlay" id="modalNuevaCompra">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3>Registrar Compra a Proveedor</h3>
+        <button class="btn-close-modal">✕</button>
+      </div>
+      <form id="formNuevaCompra" onsubmit="event.preventDefault(); window.app.procesarCompra();">
+        <div class="modal-body">
+          <div class="form-grid">
+            <div class="form-group col-span-2">
+              <label>Proveedor:</label>
+              <select id="modalCompProveedor" class="form-control" required></select>
+            </div>
+            <div class="form-group col-span-2">
+              <label>Producto a Abastecer:</label>
+              <select id="modalCompProducto" class="form-control" required></select>
+            </div>
+            <div class="form-group">
+              <label>Cantidad:</label>
+              <input type="number" min="1" id="modalCompCantidad" class="form-control" value="20" required>
+            </div>
+            <div class="form-group">
+              <label>Costo Unitario (S/):</label>
+              <input type="number" step="0.01" min="0" id="modalCompCosto" class="form-control" value="17.50" required>
+            </div>
+            <div class="form-group col-span-2">
+              <label style="display:flex; align-items:center; gap:0.5rem; cursor:pointer;">
+                <input type="checkbox" id="modalCompEsCredito" style="width:16px; height:16px;">
+                <span>Compra al Crédito (Generar Cuenta por Pagar)</span>
+              </label>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-secondary btn-close-modal">Cancelar</button>
+          <button type="submit" class="btn-primary">Confirmar Compra & Aumentar Stock</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal Nueva Orden de Compra -->
+  <div class="modal-overlay" id="modalNuevaOrdenCompra">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3>Nueva Orden de Compra</h3>
+        <button class="btn-close-modal">✕</button>
+      </div>
+      <form id="formNuevaOrdenCompra" onsubmit="event.preventDefault(); window.app.crearOrdenCompra();">
+        <div class="modal-body">
+          <div class="form-grid">
+            <div class="form-group col-span-2">
+              <label>Proveedor:</label>
+              <select id="modalOcProveedor" class="form-control" required></select>
+            </div>
+            <div class="form-group col-span-2">
+              <label>Producto:</label>
+              <select id="modalOcProducto" class="form-control" required></select>
+            </div>
+            <div class="form-group">
+              <label>Cantidad:</label>
+              <input type="number" min="1" id="modalOcCantidad" class="form-control" value="30" required>
+            </div>
+            <div class="form-group">
+              <label>Costo Estimado (S/):</label>
+              <input type="number" step="0.01" min="0" id="modalOcCosto" class="form-control" value="17.50" required>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-secondary btn-close-modal">Cancelar</button>
+          <button type="submit" class="btn-primary">Generar Orden</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal Apertura de Caja -->
+  <div class="modal-overlay" id="modalAperturaCaja">
+    <div class="modal-dialog" style="max-width: 420px;">
+      <div class="modal-header">
+        <h3>Apertura de Caja POS</h3>
+        <button class="btn-close-modal">✕</button>
+      </div>
+      <form id="formAperturaCaja" onsubmit="event.preventDefault(); window.app.abrirCaja();">
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="modalCajaMontoInicial">Fondo Inicial de Sencillo (S/) *</label>
+            <input type="number" step="0.50" min="0" id="modalCajaMontoInicial" class="form-control" value="150.00" required>
+          </div>
+          <div class="form-group">
+            <label for="modalCajaObs">Observaciones</label>
+            <input type="text" id="modalCajaObs" class="form-control" value="Apertura turno regular">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-secondary btn-close-modal">Cancelar</button>
+          <button type="submit" class="btn-primary">Abrir Caja</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal Movimiento de Caja (Ingreso / Egreso) -->
+  <div class="modal-overlay" id="modalMovimientoCaja">
+    <div class="modal-dialog" style="max-width: 420px;">
+      <div class="modal-header">
+        <h3>Registrar Ingreso o Egreso de Caja</h3>
+        <button class="btn-close-modal">✕</button>
+      </div>
+      <form id="formMovCaja" onsubmit="event.preventDefault(); window.app.guardarMovimientoCaja();">
+        <div class="modal-body">
+          <div class="form-group">
+            <label>Tipo de Movimiento:</label>
+            <select id="modalMovCajaTipo" class="form-control">
+              <option value="EGRESO">Egreso / Gasto Menor</option>
+              <option value="INGRESO">Ingreso Manual</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Monto (S/) *</label>
+            <input type="number" step="0.50" min="0.50" id="modalMovCajaMonto" class="form-control" placeholder="0.00" required>
+          </div>
+          <div class="form-group">
+            <label>Concepto / Detalle *</label>
+            <input type="text" id="modalMovCajaConcepto" class="form-control" placeholder="Ej. Compra de cinta de embalaje" required>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-secondary btn-close-modal">Cancelar</button>
+          <button type="submit" class="btn-primary">Registrar Movimiento</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal Cierre de Caja & Arqueo -->
+  <div class="modal-overlay" id="modalCierreCaja">
+    <div class="modal-dialog" style="max-width: 440px;">
+      <div class="modal-header">
+        <h3>Cierre de Caja & Arqueo Físico</h3>
+        <button class="btn-close-modal">✕</button>
+      </div>
+      <form id="formCierreCaja" onsubmit="event.preventDefault(); window.app.procesarCierreCaja();">
+        <div class="modal-body">
+          <div style="background:#f8fafc; border:1px solid #e2e8f0; padding:1rem; border-radius:var(--radius-md); margin-bottom:1rem;">
+            <div style="display:flex; justify-content:space-between; margin-bottom:0.35rem; font-size:0.85rem;">
+              <span>Fondo Inicial:</span>
+              <strong id="cierreFondoInicial">S/ 0.00</strong>
+            </div>
+            <div style="display:flex; justify-content:space-between; margin-bottom:0.35rem; font-size:0.85rem;">
+              <span>Ventas en Efectivo:</span>
+              <strong id="cierreVentasEfectivo">S/ 0.00</strong>
+            </div>
+            <div style="display:flex; justify-content:space-between; margin-bottom:0.35rem; font-size:0.85rem;">
+              <span>Ingresos / Egresos Netos:</span>
+              <strong id="cierreNetoOtros">S/ 0.00</strong>
+            </div>
+            <div style="display:flex; justify-content:space-between; border-top:1px solid #cbd5e1; padding-top:0.35rem; font-weight:800;">
+              <span>Efectivo Esperado en Gaveta:</span>
+              <span id="cierreEfectivoEsperado" style="color:var(--primary);">S/ 0.00</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="modalCierreContado">Efectivo Contado Físicamente (S/) *</label>
+            <input type="number" step="0.50" min="0" id="modalCierreContado" class="form-control" style="font-size:1.1rem; font-weight:800;" oninput="window.app.calcularDiferenciaCierre()" required>
+          </div>
+          <div style="display:flex; justify-content:space-between; padding:0.5rem 0; font-weight:700;">
+            <span>Diferencia (Sobrante / Faltante):</span>
+            <span id="cierreDiferenciaLabel" style="font-size:1.05rem;">S/ 0.00</span>
+          </div>
+          <div class="form-group">
+            <label for="modalCierreObs">Observaciones del Cierre</label>
+            <input type="text" id="modalCierreObs" class="form-control" value="Arqueo conforme">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-secondary btn-close-modal">Cancelar</button>
+          <button type="submit" class="btn-primary" style="background:var(--danger);">Cerrar Turno Definitivamente</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal Abono Cuenta por Cobrar -->
+  <div class="modal-overlay" id="modalAbonoCobrar">
+    <div class="modal-dialog" style="max-width: 400px;">
+      <div class="modal-header">
+        <h3>Registrar Cobranza a Cliente</h3>
+        <button class="btn-close-modal">✕</button>
+      </div>
+      <form id="formAbonoCobrar" onsubmit="event.preventDefault(); window.app.procesarAbonoCobrar();">
+        <input type="hidden" id="abonoCobrarCuentaId">
+        <div class="modal-body">
+          <p id="abonoCobrarClienteLabel" style="font-weight:700; margin-bottom:0.75rem; color:var(--text-main);"></p>
+          <div class="form-group">
+            <label>Monto a Abonar (S/) *</label>
+            <input type="number" step="0.50" min="0.50" id="abonoCobrarMonto" class="form-control" required>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-secondary btn-close-modal">Cancelar</button>
+          <button type="submit" class="btn-primary">Guardar Abono</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal Abono Cuenta por Pagar -->
+  <div class="modal-overlay" id="modalAbonoPagar">
+    <div class="modal-dialog" style="max-width: 400px;">
+      <div class="modal-header">
+        <h3>Registrar Pago a Proveedor</h3>
+        <button class="btn-close-modal">✕</button>
+      </div>
+      <form id="formAbonoPagar" onsubmit="event.preventDefault(); window.app.procesarAbonoPagar();">
+        <input type="hidden" id="abonoPagarCuentaId">
+        <div class="modal-body">
+          <p id="abonoPagarProveedorLabel" style="font-weight:700; margin-bottom:0.75rem; color:var(--text-main);"></p>
+          <div class="form-group">
+            <label>Monto a Pagar (S/) *</label>
+            <input type="number" step="0.50" min="0.50" id="abonoPagarMonto" class="form-control" required>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-secondary btn-close-modal">Cancelar</button>
+          <button type="submit" class="btn-primary">Guardar Pago</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal Nuevo Usuario -->
+  <div class="modal-overlay" id="modalNuevoUsuario">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3>Registrar Nuevo Usuario</h3>
+        <button class="btn-close-modal">✕</button>
+      </div>
+      <form id="formNuevoUsuario" onsubmit="event.preventDefault(); window.app.guardarNuevoUsuario();">
+        <div class="modal-body">
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="modalUsrUsuario">Nombre de Usuario *</label>
+              <input type="text" id="modalUsrUsuario" class="form-control" required autocomplete="off">
+            </div>
+            <div class="form-group">
+              <label for="modalUsrPassword">Contraseña *</label>
+              <input type="password" id="modalUsrPassword" class="form-control" required autocomplete="new-password">
+            </div>
+            <div class="form-group">
+              <label for="modalUsrNombres">Nombres *</label>
+              <input type="text" id="modalUsrNombres" class="form-control" required>
+            </div>
+            <div class="form-group">
+              <label for="modalUsrApellidos">Apellidos *</label>
+              <input type="text" id="modalUsrApellidos" class="form-control" required>
+            </div>
+            <div class="form-group">
+              <label for="modalUsrCorreo">Correo</label>
+              <input type="email" id="modalUsrCorreo" class="form-control">
+            </div>
+            <div class="form-group">
+              <label for="modalUsrRol">Rol Asignado *</label>
+              <select id="modalUsrRol" class="form-control" required></select>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-secondary btn-close-modal">Cancelar</button>
+          <button type="submit" class="btn-primary">Guardar Usuario</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal Ticket de Venta Térmico -->
+  <div class="modal-overlay" id="modalTicket">
+    <div class="modal-dialog" style="max-width: 400px;">
+      <div class="modal-header">
+        <h3>Comprobante de Pago</h3>
+        <button class="btn-close-modal">✕</button>
+      </div>
+      <div class="modal-body" id="ticketModalContent"></div>
       <div class="modal-footer">
         <button type="button" class="btn-secondary btn-close-modal">Cerrar</button>
-        <button type="button" class="btn-primary" onclick="window.app.imprimirTicket()">
-          <span>🖨️</span> Imprimir / PDF
-        </button>
+        <button type="button" class="btn-primary" onclick="window.print()">🖨️ Imprimir Ticket</button>
       </div>
     </div>
   </div>
 
-  <!-- Toasts -->
+  <!-- Contenedor Toasts -->
   <div class="toast-container" id="toastContainer"></div>
 
-  <!-- Script Principal -->
-  <script src="./src/app.js?v=2.0"></script>
+  <!-- Script Principal de la Aplicación -->
+  <script src="./src/app.js?v=3.0"></script>
 </body>
 </html>

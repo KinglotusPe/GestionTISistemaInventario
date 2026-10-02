@@ -1,6 +1,7 @@
 package com.jireh.Sistema.controller;
 
 import com.jireh.Sistema.dto.ProductoDTO;
+import com.jireh.Sistema.security.RequirePermission;
 import com.jireh.Sistema.service.ProductoService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -31,11 +32,13 @@ public class ProductoController {
     }
 
     @PostMapping
+    @RequirePermission("PRODUCTO_CREAR")
     public ResponseEntity<ProductoDTO> guardar(@RequestBody ProductoDTO dto) {
         return ResponseEntity.ok(productoService.guardar(dto));
     }
 
     @DeleteMapping("/{id}")
+    @RequirePermission("PRODUCTO_DESACTIVAR")
     public ResponseEntity<Map<String, Object>> desactivar(@PathVariable Long id) {
         productoService.desactivar(id);
         Map<String, Object> resp = new HashMap<>();

@@ -217,15 +217,23 @@ CREATE TABLE IF NOT EXISTS movimiento_inventario (
 -- 1. Roles
 INSERT INTO rol (id, nombre, descripcion, estado) VALUES
 (1, 'ADMINISTRADOR', 'Acceso total al sistema', 1),
-(2, 'VENDEDOR', 'Acceso a facturación, POS y ventas', 1),
-(3, 'ALMACENERO', 'Control de stock y movimientos de inventario', 1)
-ON DUPLICATE KEY UPDATE nombre=VALUES(nombre);
+(1, 'SUPER_ADMIN', 'Acceso total y configuración del sistema', 1),
+(2, 'ADMINISTRADOR', 'Gestión operativa, comercial y financiera', 1),
+(3, 'CAJERO', 'Punto de Venta POS, cobros y caja personal', 1),
+(4, 'VENDEDOR', 'Cotizaciones, ventas y catálogo de clientes', 1),
+(5, 'ALMACENERO', 'Control de existencias, recepción y kárdex', 1),
+(6, 'COMPRAS', 'Proveedores, órdenes de compra y abastecimiento', 1),
+(7, 'GERENTE', 'Consulta de tableros, reportes y métricas de rentabilidad', 1)
+ON DUPLICATE KEY UPDATE descripcion=VALUES(descripcion), estado=VALUES(estado);
 
 -- 2. Usuarios del Sistema
 INSERT INTO usuario (id, usuario, contrasena, nombres, apellidos, correo, telefono, estado, rol_id) VALUES
-(1, 'admin', '$2a$10$7EqJtq98hPqEX7fNZaFWoOhi54r48w6N98g4a2tP83vXq/1XoK8m6', 'Administrador', 'Jireh', 'admin@jireh.com', '987654321', 1, 1),
-(2, 'vendedor', 'vendedor123', 'Rosa María', 'Medina Paredes', 'vendedor@jireh.com', '987112233', 1, 2),
-(3, 'almacenero', 'almacen123', 'Carlos Eduardo', 'Gutiérrez Ríos', 'almacen@jireh.com', '987445566', 1, 3)
+(1, 'admin', '$2a$10$7EqJtq98hPqEX7fNZaFWoOhi54r48w6N98g4a2tP83vXq/1XoK8m6', 'Administrador General', 'Jireh', 'admin@jireh.com', '987654321', 1, 1),
+(2, 'vendedor', 'vendedor123', 'Rosa María', 'Medina Paredes', 'vendedor@jireh.com', '987112233', 1, 4),
+(3, 'almacenero', 'almacen123', 'Carlos Eduardo', 'Gutiérrez Ríos', 'almacen@jireh.com', '987445566', 1, 5),
+(4, 'cajero', 'cajero123', 'Lucía Fernanda', 'Rojas Quispe', 'caja@jireh.com', '987556677', 1, 3),
+(5, 'compras', 'compras123', 'Roberto Antonio', 'Vargas Soria', 'compras@jireh.com', '987667788', 1, 6),
+(6, 'gerente', 'gerente123', 'Ing. Patricia', 'Navarro Flores', 'gerencia@jireh.com', '987778899', 1, 7)
 ON DUPLICATE KEY UPDATE nombres=VALUES(nombres), apellidos=VALUES(apellidos), rol_id=VALUES(rol_id);
 
 -- 3. Categorías de Plastiquería
@@ -303,4 +311,392 @@ INSERT INTO inventario (id, stock_actual, stock_maximo, ubicacion, fecha_actuali
 (7, 45, 120, 'Almacén B - Estante 1', NOW(), 7),
 (8, 24, 60, 'Zona de Menaje - Piso', NOW(), 8)
 ON DUPLICATE KEY UPDATE stock_actual=VALUES(stock_actual), stock_maximo=VALUES(stock_maximo), ubicacion=VALUES(ubicacion);
+
+-- =======================================================================
+-- TABLAS AVANZADAS PARA SISTEMA COMERCIAL INTEGRAL PLASTIQUERÍA JIREH
+-- =======================================================================
+
+-- 11. Permisos RBAC
+CREATE TABLE IF NOT EXISTS permiso (
+    id BIGINT NOT NULL AUTO_INCREMENT,
+    codigo VARCHAR(60) NOT NULL,
+    nombre VARCHAR(100) NOT NULL,
+    modulo VARCHAR(50) NOT NULL,
+    descripcion VARCHAR(200),
+    PRIMARY KEY (id),
+    UNIQUE KEY uk_permiso_codigo (codigo)
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS rol_permiso (
+    rol_id BIGINT NOT NULL,
+    permiso_id BIGINT NOT NULL,
+    PRIMARY KEY (rol_id, permiso_id),
+    CONSTRAINT fk_rp_rol FOREIGN KEY (rol_id) REFERENCES rol (id) ON DELETE CASCADE,
+    CONSTRAINT fk_rp_permiso FOREIGN KEY (permiso_id) REFERENCES permiso (id) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+-- 12. Presentaciones Mayoristas y Minoristas de Productos
+CREATE TABLE IF NOT EXISTS producto_presentacion (
+    id BIGINT NOT NULL AUTO_INCREMENT,
+    producto_id BIGINT NOT NULL,
+    nombre_presentacion VARCHAR(80) NOT NULL,
+    factor_equivalencia DECIMAL(10,2) NOT NULL DEFAULT 1.00,
+    precio_costo DECIMAL(12,2) NOT NULL,
+    precio_venta DECIMAL(12,2) NOT NULL,
+    precio_mayorista DECIMAL(12,2),
+    codigo_barras VARCHAR(50),
+    es_default BIT NOT NULL DEFAULT 0,
+    estado BIT NOT NULL DEFAULT 1,
+    PRIMARY KEY (id),
+    CONSTRAINT fk_pp_producto FOREIGN KEY (producto_id) REFERENCES producto (id) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+-- 13. Cotizaciones
+CREATE TABLE IF NOT EXISTS cotizacion (
+    id BIGINT NOT NULL AUTO_INCREMENT,
+    numero VARCHAR(30) NOT NULL,
+    fecha DATETIME(6) NOT NULL,
+    vigencia_dias INT DEFAULT 15,
+    subtotal DECIMAL(12,2) NOT NULL,
+    igv DECIMAL(12,2) NOT NULL,
+    total DECIMAL(12,2) NOT NULL,
+    estado VARCHAR(30) NOT NULL DEFAULT 'PENDIENTE',
+    observaciones VARCHAR(250),
+    cliente_id BIGINT NOT NULL,
+    usuario_id BIGINT NOT NULL,
+    PRIMARY KEY (id),
+    UNIQUE KEY uk_cotizacion_numero (numero),
+    CONSTRAINT fk_cotiz_cliente FOREIGN KEY (cliente_id) REFERENCES cliente (id),
+    CONSTRAINT fk_cotiz_usuario FOREIGN KEY (usuario_id) REFERENCES usuario (id)
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS detalle_cotizacion (
+    id BIGINT NOT NULL AUTO_INCREMENT,
+    cotizacion_id BIGINT NOT NULL,
+    producto_id BIGINT NOT NULL,
+    nombre_presentacion VARCHAR(80),
+    cantidad INT NOT NULL,
+    precio_unitario DECIMAL(12,2) NOT NULL,
+    descuento DECIMAL(12,2) DEFAULT 0,
+    subtotal DECIMAL(12,2) NOT NULL,
+    PRIMARY KEY (id),
+    CONSTRAINT fk_detcot_cotizacion FOREIGN KEY (cotizacion_id) REFERENCES cotizacion (id) ON DELETE CASCADE,
+    CONSTRAINT fk_detcot_producto FOREIGN KEY (producto_id) REFERENCES producto (id)
+) ENGINE=InnoDB;
+
+-- 14. Devoluciones de Venta
+CREATE TABLE IF NOT EXISTS devolucion (
+    id BIGINT NOT NULL AUTO_INCREMENT,
+    numero VARCHAR(30) NOT NULL,
+    fecha DATETIME(6) NOT NULL,
+    motivo VARCHAR(250) NOT NULL,
+    total_devuelto DECIMAL(12,2) NOT NULL,
+    estado VARCHAR(30) NOT NULL DEFAULT 'PROCESADA',
+    venta_id BIGINT NOT NULL,
+    usuario_id BIGINT NOT NULL,
+    PRIMARY KEY (id),
+    UNIQUE KEY uk_devolucion_numero (numero),
+    CONSTRAINT fk_dev_venta FOREIGN KEY (venta_id) REFERENCES venta (id),
+    CONSTRAINT fk_dev_usuario FOREIGN KEY (usuario_id) REFERENCES usuario (id)
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS detalle_devolucion (
+    id BIGINT NOT NULL AUTO_INCREMENT,
+    devolucion_id BIGINT NOT NULL,
+    producto_id BIGINT NOT NULL,
+    cantidad INT NOT NULL,
+    precio_unitario DECIMAL(12,2) NOT NULL,
+    subtotal DECIMAL(12,2) NOT NULL,
+    PRIMARY KEY (id),
+    CONSTRAINT fk_detdev_devolucion FOREIGN KEY (devolucion_id) REFERENCES devolucion (id) ON DELETE CASCADE,
+    CONSTRAINT fk_detdev_producto FOREIGN KEY (producto_id) REFERENCES producto (id)
+) ENGINE=InnoDB;
+
+-- 15. Órdenes de Compra
+CREATE TABLE IF NOT EXISTS orden_compra (
+    id BIGINT NOT NULL AUTO_INCREMENT,
+    numero VARCHAR(30) NOT NULL,
+    fecha DATETIME(6) NOT NULL,
+    fecha_esperada DATE,
+    subtotal DECIMAL(12,2) NOT NULL,
+    igv DECIMAL(12,2) NOT NULL,
+    total DECIMAL(12,2) NOT NULL,
+    estado VARCHAR(30) NOT NULL DEFAULT 'PENDIENTE',
+    observaciones VARCHAR(250),
+    proveedor_id BIGINT NOT NULL,
+    usuario_id BIGINT NOT NULL,
+    PRIMARY KEY (id),
+    UNIQUE KEY uk_oc_numero (numero),
+    CONSTRAINT fk_oc_proveedor FOREIGN KEY (proveedor_id) REFERENCES proveedor (id),
+    CONSTRAINT fk_oc_usuario FOREIGN KEY (usuario_id) REFERENCES usuario (id)
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS detalle_orden_compra (
+    id BIGINT NOT NULL AUTO_INCREMENT,
+    orden_compra_id BIGINT NOT NULL,
+    producto_id BIGINT NOT NULL,
+    cantidad INT NOT NULL,
+    precio_unitario DECIMAL(12,2) NOT NULL,
+    subtotal DECIMAL(12,2) NOT NULL,
+    PRIMARY KEY (id),
+    CONSTRAINT fk_detoc_oc FOREIGN KEY (orden_compra_id) REFERENCES orden_compra (id) ON DELETE CASCADE,
+    CONSTRAINT fk_detoc_producto FOREIGN KEY (producto_id) REFERENCES producto (id)
+) ENGINE=InnoDB;
+
+-- 16. Caja y Arqueos
+CREATE TABLE IF NOT EXISTS caja (
+    id BIGINT NOT NULL AUTO_INCREMENT,
+    nombre VARCHAR(60) NOT NULL,
+    fecha_apertura DATETIME(6) NOT NULL,
+    fecha_cierre DATETIME(6),
+    monto_inicial DECIMAL(12,2) NOT NULL,
+    total_ventas_efectivo DECIMAL(12,2) DEFAULT 0,
+    total_ventas_digital DECIMAL(12,2) DEFAULT 0,
+    total_ingresos DECIMAL(12,2) DEFAULT 0,
+    total_egresos DECIMAL(12,2) DEFAULT 0,
+    monto_esperado DECIMAL(12,2) DEFAULT 0,
+    monto_contado DECIMAL(12,2),
+    diferencia DECIMAL(12,2),
+    estado VARCHAR(20) NOT NULL DEFAULT 'ABIERTA',
+    observaciones VARCHAR(250),
+    usuario_id BIGINT NOT NULL,
+    PRIMARY KEY (id),
+    CONSTRAINT fk_caja_usuario FOREIGN KEY (usuario_id) REFERENCES usuario (id)
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS movimiento_caja (
+    id BIGINT NOT NULL AUTO_INCREMENT,
+    caja_id BIGINT NOT NULL,
+    tipo VARCHAR(30) NOT NULL,
+    concepto VARCHAR(200) NOT NULL,
+    monto DECIMAL(12,2) NOT NULL,
+    metodo_pago_id BIGINT,
+    fecha DATETIME(6) NOT NULL,
+    usuario_id BIGINT NOT NULL,
+    PRIMARY KEY (id),
+    CONSTRAINT fk_movcaja_caja FOREIGN KEY (caja_id) REFERENCES caja (id) ON DELETE CASCADE,
+    CONSTRAINT fk_movcaja_usuario FOREIGN KEY (usuario_id) REFERENCES usuario (id)
+) ENGINE=InnoDB;
+
+-- 17. Cuentas por Cobrar (Créditos a Clientes)
+CREATE TABLE IF NOT EXISTS cuenta_cobrar (
+    id BIGINT NOT NULL AUTO_INCREMENT,
+    venta_id BIGINT NOT NULL,
+    cliente_id BIGINT NOT NULL,
+    monto_total DECIMAL(12,2) NOT NULL,
+    monto_pagado DECIMAL(12,2) DEFAULT 0,
+    saldo_pendiente DECIMAL(12,2) NOT NULL,
+    fecha_emision DATETIME(6) NOT NULL,
+    fecha_vencimiento DATE,
+    estado VARCHAR(20) NOT NULL DEFAULT 'PENDIENTE',
+    PRIMARY KEY (id),
+    CONSTRAINT fk_cxc_venta FOREIGN KEY (venta_id) REFERENCES venta (id),
+    CONSTRAINT fk_cxc_cliente FOREIGN KEY (cliente_id) REFERENCES cliente (id)
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS abono_cuenta_cobrar (
+    id BIGINT NOT NULL AUTO_INCREMENT,
+    cuenta_cobrar_id BIGINT NOT NULL,
+    monto DECIMAL(12,2) NOT NULL,
+    fecha DATETIME(6) NOT NULL,
+    metodo_pago_id BIGINT NOT NULL,
+    nota VARCHAR(200),
+    usuario_id BIGINT NOT NULL,
+    PRIMARY KEY (id),
+    CONSTRAINT fk_abocxc_cxc FOREIGN KEY (cuenta_cobrar_id) REFERENCES cuenta_cobrar (id) ON DELETE CASCADE,
+    CONSTRAINT fk_abocxc_metodo FOREIGN KEY (metodo_pago_id) REFERENCES metodo_pago (id),
+    CONSTRAINT fk_abocxc_usuario FOREIGN KEY (usuario_id) REFERENCES usuario (id)
+) ENGINE=InnoDB;
+
+-- 18. Cuentas por Pagar (Créditos con Proveedores)
+CREATE TABLE IF NOT EXISTS cuenta_pagar (
+    id BIGINT NOT NULL AUTO_INCREMENT,
+    compra_id BIGINT NOT NULL,
+    proveedor_id BIGINT NOT NULL,
+    monto_total DECIMAL(12,2) NOT NULL,
+    monto_pagado DECIMAL(12,2) DEFAULT 0,
+    saldo_pendiente DECIMAL(12,2) NOT NULL,
+    fecha_emision DATETIME(6) NOT NULL,
+    fecha_vencimiento DATE,
+    estado VARCHAR(20) NOT NULL DEFAULT 'PENDIENTE',
+    PRIMARY KEY (id),
+    CONSTRAINT fk_cxp_compra FOREIGN KEY (compra_id) REFERENCES compra (id),
+    CONSTRAINT fk_cxp_proveedor FOREIGN KEY (proveedor_id) REFERENCES proveedor (id)
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS abono_cuenta_pagar (
+    id BIGINT NOT NULL AUTO_INCREMENT,
+    cuenta_pagar_id BIGINT NOT NULL,
+    monto DECIMAL(12,2) NOT NULL,
+    fecha DATETIME(6) NOT NULL,
+    metodo_pago_id BIGINT NOT NULL,
+    nota VARCHAR(200),
+    usuario_id BIGINT NOT NULL,
+    PRIMARY KEY (id),
+    CONSTRAINT fk_abocxp_cxp FOREIGN KEY (cuenta_pagar_id) REFERENCES cuenta_pagar (id) ON DELETE CASCADE,
+    CONSTRAINT fk_abocxp_metodo FOREIGN KEY (metodo_pago_id) REFERENCES metodo_pago (id),
+    CONSTRAINT fk_abocxp_usuario FOREIGN KEY (usuario_id) REFERENCES usuario (id)
+) ENGINE=InnoDB;
+
+-- 19. Auditoría del Sistema
+CREATE TABLE IF NOT EXISTS auditoria (
+    id BIGINT NOT NULL AUTO_INCREMENT,
+    usuario_id BIGINT,
+    username VARCHAR(60) NOT NULL,
+    modulo VARCHAR(60) NOT NULL,
+    accion VARCHAR(60) NOT NULL,
+    entidad VARCHAR(60),
+    entidad_id BIGINT,
+    descripcion VARCHAR(300),
+    fecha_hora DATETIME(6) NOT NULL,
+    ip_origen VARCHAR(45),
+    PRIMARY KEY (id)
+) ENGINE=InnoDB;
+
+-- 20. Configuración de Empresa
+CREATE TABLE IF NOT EXISTS empresa_config (
+    id BIGINT NOT NULL,
+    razon_social VARCHAR(150) NOT NULL,
+    nombre_comercial VARCHAR(150) NOT NULL,
+    ruc VARCHAR(20) NOT NULL,
+    direccion VARCHAR(200) NOT NULL,
+    telefono VARCHAR(30),
+    correo VARCHAR(100),
+    moneda_simbolo VARCHAR(10) DEFAULT 'S/',
+    moneda_nombre VARCHAR(30) DEFAULT 'Soles',
+    igv_porcentaje DECIMAL(5,2) DEFAULT 18.00,
+    mensaje_ticket VARCHAR(250),
+    PRIMARY KEY (id)
+) ENGINE=InnoDB;
+
+-- =======================================================================
+-- DATOS SEMILLA PARA PERMISOS, PRESENTACIONES Y CONFIGURACIÓN DE EMPRESA
+-- =======================================================================
+
+-- Permisos del Sistema
+INSERT INTO permiso (id, codigo, nombre, modulo, descripcion) VALUES
+(1, 'DASHBOARD_VER', 'Ver Tablero Ejecutivo', 'Dashboard', 'Visualización de métricas, tarjetas y gráficos'),
+(2, 'PRODUCTO_VER', 'Consultar Productos', 'Inventario', 'Ver catálogo y detalle de productos'),
+(3, 'PRODUCTO_CREAR', 'Crear Producto', 'Inventario', 'Registrar nuevos productos en el catálogo'),
+(4, 'PRODUCTO_EDITAR', 'Modificar Producto', 'Inventario', 'Actualizar datos, precios y categorías'),
+(5, 'PRODUCTO_DESACTIVAR', 'Desactivar Producto', 'Inventario', 'Baja lógica de productos sin eliminar historial'),
+(6, 'INVENTARIO_VER', 'Ver Stock', 'Inventario', 'Consultar existencias y semáforos de stock'),
+(7, 'INVENTARIO_AJUSTAR', 'Ajustar Inventario', 'Inventario', 'Entradas, salidas manuales y mermas'),
+(8, 'KARDEX_VER', 'Consultar Kárdex', 'Inventario', 'Historial detallado físico y valorizado'),
+(9, 'VENTA_VER', 'Historial de Ventas', 'Ventas', 'Consultar comprobantes y ventas realizadas'),
+(10, 'VENTA_CREAR', 'Emitir Venta (POS)', 'Ventas', 'Uso del punto de venta y emisión de boletas/tickets'),
+(11, 'VENTA_ANULAR', 'Anular Venta', 'Ventas', 'Cancelación de ventas y restitución de stock'),
+(12, 'VENTA_DESCUENTO', 'Aplicar Descuentos', 'Ventas', 'Permiso para otorgar rebajas en caja'),
+(13, 'VENTA_DEVOLVER', 'Devoluciones de Venta', 'Ventas', 'Recepción de mercadería devuelta por clientes'),
+(14, 'COTIZACION_VER', 'Ver Cotizaciones', 'Ventas', 'Consultar propuestas comerciales'),
+(15, 'COTIZACION_CREAR', 'Emitir y Convertir Cotización', 'Ventas', 'Crear cotizaciones y convertirlas a venta'),
+(16, 'COMPRA_VER', 'Ver Compras', 'Compras', 'Consultar compras a proveedores'),
+(17, 'COMPRA_CREAR', 'Registrar Compra', 'Compras', 'Ingresar facturas de compras y sumar stock'),
+(18, 'COMPRA_ANULAR', 'Anular Compra', 'Compras', 'Cancelar compras recibidas'),
+(19, 'ORDEN_COMPRA_VER', 'Ver Órdenes de Compra', 'Compras', 'Consultar solicitudes a proveedores'),
+(20, 'ORDEN_COMPRA_CREAR', 'Generar Órdenes de Compra', 'Compras', 'Crear y aprobar órdenes de abastecimiento'),
+(21, 'CAJA_VER', 'Consultar Caja', 'Finanzas', 'Ver estado y arqueo de caja'),
+(22, 'CAJA_ABRIR', 'Apertura de Caja', 'Finanzas', 'Registrar fondo de sencillo inicial'),
+(23, 'CAJA_CERRAR', 'Cierre y Arqueo de Caja', 'Finanzas', 'Cierre diario de turno y balance'),
+(24, 'CAJA_INGRESO', 'Registrar Ingreso a Caja', 'Finanzas', 'Entradas extraordinarias de dinero'),
+(25, 'CAJA_EGRESO', 'Registrar Egreso de Caja', 'Finanzas', 'Gastos menores, viáticos o pagos'),
+(26, 'CLIENTE_VER', 'Ver Directorio Clientes', 'Clientes', 'Consultar clientes registrados'),
+(27, 'CLIENTE_CREAR', 'Registrar Cliente', 'Clientes', 'Alta rápida desde POS o módulo'),
+(28, 'CLIENTE_EDITAR', 'Editar Cliente', 'Clientes', 'Actualizar teléfonos, RUC o direcciones'),
+(29, 'PROVEEDOR_VER', 'Ver Proveedores', 'Proveedores', 'Directorio de empresas distribuidoras'),
+(30, 'PROVEEDOR_CREAR', 'Registrar Proveedor', 'Proveedores', 'Crear proveedores con RUC'),
+(31, 'PROVEEDOR_EDITAR', 'Editar Proveedor', 'Proveedores', 'Actualizar condiciones comerciales'),
+(32, 'FINANZAS_VER', 'Ver Cuentas y Cobranzas', 'Finanzas', 'Cuentas por cobrar y pagar'),
+(33, 'REPORTE_VENTAS', 'Reportes de Ventas', 'Reportes', 'Ventas por periodo, cliente y medio de pago'),
+(34, 'REPORTE_COMPRAS', 'Reportes de Compras', 'Reportes', 'Adquisiciones y gastos a proveedores'),
+(35, 'REPORTE_INVENTARIO', 'Reporte Inventario Valorizado', 'Reportes', 'Valor total en almacén a precio de costo'),
+(36, 'REPORTE_GANANCIAS', 'Reporte de Utilidad Real', 'Reportes', 'Utilidad bruta = Ventas - Costo de ventas'),
+(37, 'USUARIO_VER', 'Ver Usuarios', 'Sistema', 'Consultar lista de colaboradores'),
+(38, 'USUARIO_CREAR', 'Registrar Usuario', 'Sistema', 'Crear nuevos accesos'),
+(39, 'USUARIO_EDITAR', 'Editar Usuario', 'Sistema', 'Modificar roles, claves y datos'),
+(40, 'USUARIO_DESACTIVAR', 'Desactivar Usuario', 'Sistema', 'Bloquear acceso al sistema'),
+(41, 'ROL_GESTIONAR', 'Gestionar Roles', 'Sistema', 'Crear y configurar roles y privilegios'),
+(42, 'PERMISO_GESTIONAR', 'Configurar Permisos', 'Sistema', 'Asignación granular por perfil'),
+(43, 'AUDITORIA_VER', 'Ver Logs de Auditoría', 'Sistema', 'Trazabilidad de operaciones críticas'),
+(44, 'CONFIG_EMPRESA', 'Configurar Empresa', 'Sistema', 'Razón social, RUC, logo y mensaje ticket')
+ON DUPLICATE KEY UPDATE nombre=VALUES(nombre), modulo=VALUES(modulo), descripcion=VALUES(descripcion);
+
+-- Asignación de Permisos a SUPER_ADMIN (Todos los 44 permisos)
+INSERT IGNORE INTO rol_permiso (rol_id, permiso_id)
+SELECT 1, id FROM permiso;
+
+-- Asignación de Permisos a ADMINISTRADOR (Todos excepto auditoría profunda)
+INSERT IGNORE INTO rol_permiso (rol_id, permiso_id)
+SELECT 2, id FROM permiso WHERE codigo NOT IN ('AUDITORIA_VER');
+
+-- Asignación a CAJERO
+INSERT IGNORE INTO rol_permiso (rol_id, permiso_id)
+SELECT 3, id FROM permiso WHERE codigo IN (
+    'DASHBOARD_VER', 'VENTA_VER', 'VENTA_CREAR', 'CLIENTE_VER', 'CLIENTE_CREAR',
+    'PRODUCTO_VER', 'CAJA_VER', 'CAJA_ABRIR', 'CAJA_CERRAR'
+);
+
+-- Asignación a VENDEDOR
+INSERT IGNORE INTO rol_permiso (rol_id, permiso_id)
+SELECT 4, id FROM permiso WHERE codigo IN (
+    'DASHBOARD_VER', 'VENTA_VER', 'VENTA_CREAR', 'VENTA_DESCUENTO', 'COTIZACION_VER',
+    'COTIZACION_CREAR', 'PRODUCTO_VER', 'CLIENTE_VER', 'CLIENTE_CREAR', 'CLIENTE_EDITAR'
+);
+
+-- Asignación a ALMACENERO
+INSERT IGNORE INTO rol_permiso (rol_id, permiso_id)
+SELECT 5, id FROM permiso WHERE codigo IN (
+    'DASHBOARD_VER', 'PRODUCTO_VER', 'PRODUCTO_CREAR', 'PRODUCTO_EDITAR', 'INVENTARIO_VER',
+    'INVENTARIO_AJUSTAR', 'KARDEX_VER', 'REPORTE_INVENTARIO', 'COMPRA_VER'
+);
+
+-- Asignación a COMPRAS
+INSERT IGNORE INTO rol_permiso (rol_id, permiso_id)
+SELECT 6, id FROM permiso WHERE codigo IN (
+    'DASHBOARD_VER', 'PROVEEDOR_VER', 'PROVEEDOR_CREAR', 'PROVEEDOR_EDITAR', 'ORDEN_COMPRA_VER',
+    'ORDEN_COMPRA_CREAR', 'COMPRA_VER', 'COMPRA_CREAR', 'PRODUCTO_VER', 'INVENTARIO_VER'
+);
+
+-- Asignación a GERENTE
+INSERT IGNORE INTO rol_permiso (rol_id, permiso_id)
+SELECT 7, id FROM permiso WHERE codigo IN (
+    'DASHBOARD_VER', 'VENTA_VER', 'COTIZACION_VER', 'COMPRA_VER', 'ORDEN_COMPRA_VER',
+    'PRODUCTO_VER', 'INVENTARIO_VER', 'KARDEX_VER', 'CLIENTE_VER', 'PROVEEDOR_VER',
+    'CAJA_VER', 'FINANZAS_VER', 'REPORTE_VENTAS', 'REPORTE_COMPRAS', 'REPORTE_INVENTARIO',
+    'REPORTE_GANANCIAS'
+);
+
+-- Presentaciones de Productos (Venta Mayorista y Minorista)
+INSERT INTO producto_presentacion (id, producto_id, nombre_presentacion, factor_equivalencia, precio_costo, precio_venta, precio_mayorista, codigo_barras, es_default, estado) VALUES
+(1, 1, 'Millar (1000 und)', 1.00, 17.50, 24.00, 21.00, '775000100101', 1, 1),
+(2, 1, 'Ciento (100 und)', 0.10, 1.80, 2.80, 2.50, '775000100102', 0, 1),
+(3, 1, 'Fardo x 10 Millares', 10.00, 170.00, 220.00, 195.00, '775000100103', 0, 1),
+
+(4, 2, 'Ciento (100 und)', 1.00, 21.00, 28.50, 26.00, '775000200201', 1, 1),
+(5, 2, 'Paquete x 25 und', 0.25, 5.50, 8.00, 7.20, '775000200202', 0, 1),
+(6, 2, 'Caja x 500 und', 5.00, 100.00, 135.00, 125.00, '775000200203', 0, 1),
+
+(7, 3, 'Ciento (100 und)', 1.00, 6.20, 9.00, 8.00, '775000300301', 1, 1),
+(8, 3, 'Paquete x 50 und', 0.50, 3.20, 4.80, 4.30, '775000300302', 0, 1),
+(9, 3, 'Millar (1000 und)', 10.00, 58.00, 82.00, 75.00, '775000300303', 0, 1),
+
+(10, 4, 'Rollo Individual', 1.00, 27.00, 36.00, 32.00, '775000400401', 1, 1),
+(11, 4, 'Caja x 4 Rollos', 4.00, 105.00, 138.00, 125.00, '775000400402', 0, 1),
+
+(12, 5, 'Ciento (100 und)', 1.00, 3.80, 5.50, 4.80, '775000500501', 1, 1),
+(13, 5, 'Millar (1000 und)', 10.00, 36.00, 50.00, 45.00, '775000500502', 0, 1),
+
+(14, 6, 'Paquete x 10 und', 1.00, 5.50, 8.00, 7.00, '775000600601', 1, 1),
+(15, 6, 'Fardo x 100 und (10 paq)', 10.00, 52.00, 72.00, 65.00, '775000600602', 0, 1)
+ON DUPLICATE KEY UPDATE nombre_presentacion=VALUES(nombre_presentacion), precio_venta=VALUES(precio_venta), precio_mayorista=VALUES(precio_mayorista);
+
+-- Configuración de Plastiquería Jireh
+INSERT INTO empresa_config (id, razon_social, nombre_comercial, ruc, direccion, telefono, correo, moneda_simbolo, moneda_nombre, igv_porcentaje, mensaje_ticket) VALUES
+(1, 'PLASTIQUERÍA Y DESCARTABLES JIREH E.I.R.L.', 'PLASTIQUERÍA JIREH', '20608945123', 'Av. Central 742, Mercado Mayorista, Lima', '01 458-9214 / 987 654 321', 'contacto@plastiqueriajireh.pe', 'S/', 'Soles', 18.00, '¡Gracias por su compra! Distribución mayorista y minorista de plásticos y descartables.')
+ON DUPLICATE KEY UPDATE razon_social=VALUES(razon_social), ruc=VALUES(ruc), mensaje_ticket=VALUES(mensaje_ticket);
+
+-- Caja Abierta de Demostración
+INSERT INTO caja (id, nombre, fecha_apertura, fecha_cierre, monto_inicial, total_ventas_efectivo, total_ventas_digital, total_ingresos, total_egresos, monto_esperado, monto_contado, diferencia, estado, observaciones, usuario_id) VALUES
+(1, 'Caja Principal 01', NOW(), NULL, 150.00, 82.50, 45.00, 0.00, 15.00, 217.50, NULL, 0.00, 'ABIERTA', 'Turno mañana aperturado con sencillo para cambio', 1)
+ON DUPLICATE KEY UPDATE nombre=VALUES(nombre);
 

@@ -1,7 +1,10 @@
 package com.jireh.Sistema.entity;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -9,6 +12,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 
 @Entity
@@ -51,8 +55,13 @@ public class Producto {
     @Column(nullable = false)
     private Boolean estado = true;
 
+    @OneToMany(mappedBy = "producto", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private List<ProductoPresentacion> presentaciones = new ArrayList<>();
+
     public Producto() { }
+
     public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
     public String getCodigo() { return codigo; }
     public void setCodigo(String codigo) { this.codigo = codigo; }
     public String getNombre() { return nombre; }
@@ -73,4 +82,6 @@ public class Producto {
     public void setStockMinimo(Integer stockMinimo) { this.stockMinimo = stockMinimo; }
     public Boolean getEstado() { return estado; }
     public void setEstado(Boolean estado) { this.estado = estado; }
+    public List<ProductoPresentacion> getPresentaciones() { return presentaciones; }
+    public void setPresentaciones(List<ProductoPresentacion> presentaciones) { this.presentaciones = presentaciones; }
 }

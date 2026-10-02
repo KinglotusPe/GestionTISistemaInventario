@@ -1,6 +1,7 @@
 package com.jireh.Sistema.service;
 
 import com.jireh.Sistema.dto.ProductoDTO;
+import com.jireh.Sistema.dto.ProductoPresentacionDTO;
 import com.jireh.Sistema.entity.*;
 import com.jireh.Sistema.exception.ResourceNotFoundException;
 import com.jireh.Sistema.repository.*;
@@ -20,18 +21,21 @@ public class ProductoService {
     private final CategoriaRepository categoriaRepository;
     private final MarcaRepository marcaRepository;
     private final UnidadMedidaRepository unidadMedidaRepository;
+    private final ProductoPresentacionRepository productoPresentacionRepository;
 
     public ProductoService(
             ProductoRepository productoRepository,
             InventarioRepository inventarioRepository,
             CategoriaRepository categoriaRepository,
             MarcaRepository marcaRepository,
-            UnidadMedidaRepository unidadMedidaRepository) {
+            UnidadMedidaRepository unidadMedidaRepository,
+            ProductoPresentacionRepository productoPresentacionRepository) {
         this.productoRepository = productoRepository;
         this.inventarioRepository = inventarioRepository;
         this.categoriaRepository = categoriaRepository;
         this.marcaRepository = marcaRepository;
         this.unidadMedidaRepository = unidadMedidaRepository;
+        this.productoPresentacionRepository = productoPresentacionRepository;
     }
 
     @Transactional(readOnly = true)
@@ -101,6 +105,18 @@ public class ProductoService {
             inv.setStockMaximo(dto.getStockMaximo() != null ? dto.getStockMaximo() : 100);
             inv.setUbicacion(dto.getUbicacion() != null ? dto.getUbicacion() : "Almacén Principal");
             inventarioRepository.save(inv);
+
+            // Crear presentación default por unidad
+            ProductoPresentacion defaultPres = new ProductoPresentacion();
+            defaultPres.setProducto(p);
+            defaultPres.setNombrePresentacion(um.getNombre());
+            defaultPres.setFactorEquivalencia(BigDecimal.ONE);
+            defaultPres.setPrecioCosto(p.getPrecioCompra());
+            defaultPres.setPrecioVenta(p.getPrecioVenta());
+            defaultPres.setPrecioMayorista(p.getPrecioVenta().multiply(new BigDecimal("0.90")));
+            defaultPres.setEsDefault(true);
+            defaultPres.setEstado(true);
+            productoPresentacionRepository.save(defaultPres);
         } else {
             if (dto.getNombre() != null) p.setNombre(dto.getNombre());
             if (dto.getDescripcion() != null) p.setDescripcion(dto.getDescripcion());
@@ -119,6 +135,25 @@ public class ProductoService {
                 if (dto.getStockMaximo() != null) inv.setStockMaximo(dto.getStockMaximo());
                 if (dto.getUbicacion() != null) inv.setUbicacion(dto.getUbicacion());
                 inventarioRepository.save(inv);
+            }
+        }
+
+        // Si se enviaron presentaciones personalizadas
+        if (dto.getPresentaciones() != null && !dto.getPresentaciones().isEmpty()) {
+            for (ProductoPresentacionDTO pdto : dto.getPresentaciones()) {
+                if (pdto.getId() == null || pdto.getId() <= 0) {
+                    ProductoPresentacion np = new ProductoPresentacion();
+                    np.setProducto(p);
+                    np.setNombrePresentacion(pdto.getNombrePresentacion());
+                    np.setFactorEquivalencia(pdto.getFactorEquivalencia() != null ? pdto.getFactorEquivalencia() : BigDecimal.ONE);
+                    np.setPrecioCosto(pdto.getPrecioCosto() != null ? pdto.getPrecioCosto() : p.getPrecioCompra());
+                    np.setPrecioVenta(pdto.getPrecioVenta() != null ? pdto.getPrecioVenta() : p.getPrecioVenta());
+                    np.setPrecioMayorista(pdto.getPrecioMayorista());
+                    np.setCodigoBarras(pdto.getCodigoBarras());
+                    np.setEsDefault(pdto.getEsDefault() != null ? pdto.getEsDefault() : false);
+                    np.setEstado(true);
+                    productoPresentacionRepository.save(np);
+                }
             }
         }
 
@@ -167,6 +202,25 @@ public class ProductoService {
             dto.setStockMaximo(100);
             dto.setUbicacion("Almacén Principal");
         }
+
+        List<ProductoPresentacion> presList = productoPresentacionRepository.findByProductoIdAndEstadoTrue(p.getId());
+        List<ProductoPresentacionDTO> pDtos = new ArrayList<>();
+        for (ProductoPresentacion pres : presList) {
+            ProductoPresentacionDTO pd = new ProductoPresentacionDTO();
+            pd.setId(pres.getId());
+            pd.setProductoId(p.getId());
+            pd.setNombrePresentacion(pres.getNombrePresentacion());
+            pd.setFactorEquivalencia(pres.getFactorEquivalencia());
+            pd.setPrecioCosto(pres.getPrecioCosto());
+            pd.setPrecioVenta(pres.getPrecioVenta());
+            pd.setPrecioMayorista(pres.getPrecioMayorista());
+            pd.setCodigoBarras(pres.getCodigoBarras());
+            pd.setEsDefault(pres.getEsDefault());
+            pd.setEstado(pres.getEstado());
+            pDtos.add(pd);
+        }
+        dto.setPresentaciones(pDtos);
+
         return dto;
     }
 }

@@ -24,6 +24,8 @@ public class VentaService {
     private final MetodoPagoRepository metodoPagoRepository;
     private final UsuarioRepository usuarioRepository;
     private final MovimientoInventarioRepository movimientoInventarioRepository;
+    private final CajaRepository cajaRepository;
+    private final AuditoriaService auditoriaService;
 
     public VentaService(
             VentaRepository ventaRepository,
@@ -32,7 +34,9 @@ public class VentaService {
             InventarioRepository inventarioRepository,
             MetodoPagoRepository metodoPagoRepository,
             UsuarioRepository usuarioRepository,
-            MovimientoInventarioRepository movimientoInventarioRepository) {
+            MovimientoInventarioRepository movimientoInventarioRepository,
+            CajaRepository cajaRepository,
+            AuditoriaService auditoriaService) {
         this.ventaRepository = ventaRepository;
         this.clienteRepository = clienteRepository;
         this.productoRepository = productoRepository;
@@ -40,6 +44,8 @@ public class VentaService {
         this.metodoPagoRepository = metodoPagoRepository;
         this.usuarioRepository = usuarioRepository;
         this.movimientoInventarioRepository = movimientoInventarioRepository;
+        this.cajaRepository = cajaRepository;
+        this.auditoriaService = auditoriaService;
     }
 
     @Transactional(readOnly = true)
@@ -116,12 +122,30 @@ public class VentaService {
                     .orElseThrow(() -> new ResourceNotFoundException("No existen métodos de pago registrados."));
         }
 
-        Usuario usuario = usuarioRepository.findAll().stream().findFirst().orElse(null);
+        Usuario usuario = null;
+        if (req.getUsuarioId() != null) {
+            usuario = usuarioRepository.findById(req.getUsuarioId()).orElse(null);
+        }
+        if (usuario == null) {
+            usuario = usuarioRepository.findAll().stream().findFirst().orElse(null);
+        }
 
         long count = ventaRepository.count();
         String numeroVenta = req.getNumero() != null && !req.getNumero().isBlank()
                 ? req.getNumero()
                 : String.format("VNT-%06d", count + 101);
+
+        // Validar stock disponible para todos los ítems antes de procesar la transacción
+        for (DetalleVentaDTO dReq : req.getDetalles()) {
+            Producto prod = productoRepository.findById(dReq.getProductoId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Producto no encontrado con ID: " + dReq.getProductoId()));
+
+            Inventario inv = inventarioRepository.findByProductoId(prod.getId()).orElse(null);
+            int stockDisponible = inv != null ? inv.getStockActual() : 0;
+            if (stockDisponible < dReq.getCantidad()) {
+                throw new BusinessException("Stock insuficiente para el producto: " + prod.getNombre() + " (Disponible: " + stockDisponible + ", Solicitado: " + dReq.getCantidad() + ")");
+            }
+        }
 
         Venta venta = new Venta();
         venta.setNumero(numeroVenta);
@@ -142,8 +166,7 @@ public class VentaService {
         List<DetalleVenta> detalles = new ArrayList<>();
 
         for (DetalleVentaDTO dReq : req.getDetalles()) {
-            Producto prod = productoRepository.findById(dReq.getProductoId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Producto no encontrado con ID: " + dReq.getProductoId()));
+            Producto prod = productoRepository.findById(dReq.getProductoId()).orElseThrow();
 
             DetalleVenta detalle = new DetalleVenta();
             detalle.setVenta(venta);
@@ -157,7 +180,7 @@ public class VentaService {
             // Descontar inventario y registrar movimiento
             Inventario inv = inventarioRepository.findByProductoId(prod.getId()).orElse(null);
             int stockAnterior = inv != null ? inv.getStockActual() : 0;
-            int stockPosterior = Math.max(0, stockAnterior - dReq.getCantidad());
+            int stockPosterior = stockAnterior - dReq.getCantidad();
 
             if (inv != null) {
                 inv.setStockActual(stockPosterior);
@@ -179,6 +202,30 @@ public class VentaService {
 
         venta.getDetalles().addAll(detalles);
         Venta guardada = ventaRepository.save(venta);
+
+        // Si hay una caja abierta, impactar el ingreso de la venta
+        Caja cajaActiva = cajaRepository.findFirstByEstadoOrderByFechaAperturaDesc("ABIERTA").orElse(null);
+        if (cajaActiva != null) {
+            if ("Efectivo".equalsIgnoreCase(metodoPago.getNombre())) {
+                cajaActiva.setTotalVentasEfectivo(cajaActiva.getTotalVentasEfectivo().add(total));
+                cajaActiva.setMontoEsperado(cajaActiva.getMontoEsperado().add(total));
+            } else {
+                cajaActiva.setTotalVentasDigital(cajaActiva.getTotalVentasDigital().add(total));
+            }
+            cajaActiva.setTotalIngresos(cajaActiva.getTotalIngresos().add(total));
+            cajaRepository.save(cajaActiva);
+        }
+
+        auditoriaService.registrar(
+            usuario != null ? usuario.getId() : 1L,
+            usuario != null ? usuario.getUsuario() : "cajero",
+            "VENTAS",
+            "REGISTRAR_VENTA",
+            "VENTA",
+            guardada.getId(),
+            "Venta emitida " + guardada.getNumero() + " Total: S/ " + total + " Cliente: " + cliente.getNombres(),
+            null
+        );
 
         req.setId(guardada.getId());
         req.setNumero(guardada.getNumero());
