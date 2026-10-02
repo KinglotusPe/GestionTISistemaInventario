@@ -221,10 +221,12 @@ INSERT INTO rol (id, nombre, descripcion, estado) VALUES
 (3, 'ALMACENERO', 'Control de stock y movimientos de inventario', 1)
 ON DUPLICATE KEY UPDATE nombre=VALUES(nombre);
 
--- 2. Usuario Administrador
+-- 2. Usuarios del Sistema
 INSERT INTO usuario (id, usuario, contrasena, nombres, apellidos, correo, telefono, estado, rol_id) VALUES
-(1, 'admin', '$2a$10$7EqJtq98hPqEX7fNZaFWoOhi54r48w6N98g4a2tP83vXq/1XoK8m6', 'Administrador', 'Jireh', 'admin@jireh.com', '987654321', 1, 1)
-ON DUPLICATE KEY UPDATE usuario=VALUES(usuario);
+(1, 'admin', '$2a$10$7EqJtq98hPqEX7fNZaFWoOhi54r48w6N98g4a2tP83vXq/1XoK8m6', 'Administrador', 'Jireh', 'admin@jireh.com', '987654321', 1, 1),
+(2, 'vendedor', 'vendedor123', 'Rosa María', 'Medina Paredes', 'vendedor@jireh.com', '987112233', 1, 2),
+(3, 'almacenero', 'almacen123', 'Carlos Eduardo', 'Gutiérrez Ríos', 'almacen@jireh.com', '987445566', 1, 3)
+ON DUPLICATE KEY UPDATE nombres=VALUES(nombres), apellidos=VALUES(apellidos), rol_id=VALUES(rol_id);
 
 -- 3. Categorías de Plastiquería
 INSERT INTO categoria (id, nombre, descripcion, estado) VALUES
@@ -288,7 +290,7 @@ INSERT INTO producto (id, codigo, nombre, descripcion, precio_compra, precio_ven
 (6, 'PLAS-006', 'Bolsa de Basura Negra Extra Pesada 35x40', 'Paquete de bolsas para tachos grandes y residuos', 5.50, 8.00, 20, 1, 1, 5, 3),
 (7, 'PLAS-007', 'Contenedor Domo Redondo para Torta Mediana', 'Base negra con tapa domo transparente alta', 32.00, 44.00, 15, 1, 2, 3, 1),
 (8, 'PLAS-008', 'Balde Plástico 20 Litros con Asa Metálica y Tapa', 'Balde industrial multiusos de alta densidad', 15.00, 22.00, 8, 1, 6, 2, 5)
-ON DUPLICATE KEY UPDATE codigo=VALUES(codigo);
+ON DUPLICATE KEY UPDATE nombre=VALUES(nombre), descripcion=VALUES(descripcion), precio_compra=VALUES(precio_compra), precio_venta=VALUES(precio_venta), stock_minimo=VALUES(stock_minimo);
 
 -- 10. Inventario Inicial
 INSERT INTO inventario (id, stock_actual, stock_maximo, ubicacion, fecha_actualizacion, producto_id) VALUES
@@ -300,4 +302,5 @@ INSERT INTO inventario (id, stock_actual, stock_maximo, ubicacion, fecha_actuali
 (6, 64, 180, 'Almacén A - Estante 4', NOW(), 6),
 (7, 45, 120, 'Almacén B - Estante 1', NOW(), 7),
 (8, 24, 60, 'Zona de Menaje - Piso', NOW(), 8)
-ON DUPLICATE KEY UPDATE stock_actual=VALUES(stock_actual);
+ON DUPLICATE KEY UPDATE stock_actual=VALUES(stock_actual), stock_maximo=VALUES(stock_maximo), ubicacion=VALUES(ubicacion);
+

@@ -31,7 +31,7 @@ if "%DB_PASS%"=="" set DB_PASS=root
 
 echo.
 echo Importando script database\jireh.sql...
-"%MYSQL_EXE%" -u root --password=%DB_PASS% < "%~dp0database\jireh.sql"
+"%MYSQL_EXE%" -u root --password=%DB_PASS% --default-character-set=utf8mb4 -e "source %~dp0database/jireh.sql"
 
 if %ERRORLEVEL% EQU 0 (
     echo.

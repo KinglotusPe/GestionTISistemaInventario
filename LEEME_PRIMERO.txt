@@ -1,0 +1,54 @@
+================================================================================
+  SISTEMA DE GESTION DE VENTAS E INVENTARIO - PLASTIQUERIA JIREH
+  Proyecto: Gestion de Proyectos en TI
+================================================================================
+
+¡HOLA! ESTA CARPETA CONTIENE EL SISTEMA LISTO PARA USAR EN CUALQUIER COMPUTADORA.
+
+--------------------------------------------------------------------------------
+1. ¿COMO EJECUTAR EN LAS COMPUTADORAS DE LA UNIVERSIDAD? (MODO EXPOSICION)
+--------------------------------------------------------------------------------
+Si en las computadoras de la universidad NO hay MySQL instalado, NO hay Java
+o NO tienes permisos de administrador:
+
+👉 HAZ DOBLE CLIC EN:
+   "2_MODO_OFFLINE_UNIVERSIDAD.bat" (o abre frontend\index.html en Chrome/Edge)
+
+- Cero dependencias: funciona al 100% de inmediato.
+- Incluye todo el catalogo de productos de Plastiqueria Jireh, Punto de Venta (POS),
+  Kardex de movimientos, gestion de clientes y emision de comprobantes.
+
+--------------------------------------------------------------------------------
+2. ¿COMO EJECUTAR EL SISTEMA COMPLETO CON BACKEND Y MYSQL?
+--------------------------------------------------------------------------------
+Si estas en tu propia laptop o PC donde tienes instalado MySQL y Java 17+:
+
+Paso A (Solo la primera vez):
+   Doble clic en "3_IMPORTAR_BD_MYSQL.bat" para crear la base de datos 'jireh'.
+
+Paso B:
+   👉 HAZ DOBLE CLIC EN:
+      "1_INICIAR_SISTEMA_COMPLETO.bat"
+
+- Inicia el servidor Spring Boot en el puerto 8080.
+- Conecta con MySQL.
+- Abre automaticamente tu navegador en: http://localhost:8080/
+
+--------------------------------------------------------------------------------
+3. USUARIOS Y CONTRASENAS PARA EL LOGIN (INICIO DE SESION)
+--------------------------------------------------------------------------------
+En la pantalla de bienvenida podras usar los botones de acceso rapido o escribir:
+
+* ADMINISTRADOR (Acceso Total al Sistema):
+  - Usuario: admin
+  - Clave:   admin
+
+* VENTAS / CAJA (Punto de Venta POS y Comprobantes):
+  - Usuario: vendedor
+  - Clave:   vendedor123
+
+* ALMACEN (Control de Stock e Inventario):
+  - Usuario: almacenero
+  - Clave:   almacen123
+
+================================================================================

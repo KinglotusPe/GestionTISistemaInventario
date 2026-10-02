@@ -115,6 +115,20 @@ Haz doble clic en:
 
 ---
 
+### 🔑 Credenciales de Acceso al Sistema
+
+El sistema cuenta con autenticación funcional tanto conectada a la base de datos MySQL como en modo demostración offline:
+
+| Perfil / Rol | Usuario | Contraseña | Permisos y Módulo Destacado |
+| :--- | :--- | :--- | :--- |
+| **Administrador** | `admin` | `admin` | Acceso integral a todos los módulos y reportes |
+| **Ventas / Caja** | `vendedor` | `vendedor123` | Punto de Venta (POS), clientes y comprobantes |
+| **Almacenero** | `almacenero` | `almacen123` | Control de stock, inventario y kárdex |
+
+*(La pantalla de inicio de sesión incluye botones de acceso rápido con 1 solo clic para pruebas y demostraciones inmediatas).*
+
+---
+
 ## 🧩 Módulos y Entidades del Sistema
 
 El modelo de datos y de negocio cubre los requerimientos funcionales del sistema:

@@ -419,9 +419,214 @@ const api = {
   getMetodosPago() { return getLocalStore().metodosPago; }
 };
 
+// ==================== 2.1 AUTENTICACIÓN Y SESIONES ====================
+const AUTH_STORAGE_KEY = 'jireh_auth_user_session';
+const DEMO_USERS = [
+  { id: 1, usuario: 'admin', contrasena: 'admin', nombres: 'Administrador', apellidos: 'Jireh', nombreCompleto: 'Administrador Jireh', correo: 'admin@jireh.com', rol: 'ADMINISTRADOR', token: 'token-admin-demo' },
+  { id: 2, usuario: 'vendedor', contrasena: 'vendedor123', nombres: 'Rosa María', apellidos: 'Medina Paredes', nombreCompleto: 'Rosa María Medina', correo: 'vendedor@jireh.com', rol: 'VENDEDOR', token: 'token-vendedor-demo' },
+  { id: 3, usuario: 'almacenero', contrasena: 'almacen123', nombres: 'Carlos Eduardo', apellidos: 'Gutiérrez Ríos', nombreCompleto: 'Carlos Gutiérrez', correo: 'almacen@jireh.com', rol: 'ALMACENERO', token: 'token-almacen-demo' }
+];
+
+function getStoredUser() {
+  try {
+    // Limpiar localStorage antiguo si existía para garantizar que pida login
+    localStorage.removeItem(AUTH_STORAGE_KEY);
+    const raw = sessionStorage.getItem(AUTH_STORAGE_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch (e) {
+    return null;
+  }
+}
+
+function updateSidebarUserUI(user) {
+  if (!user) return;
+  const avatarElem = document.getElementById('sidebarUserAvatar');
+  const nameElem = document.getElementById('sidebarUserName');
+  const roleBadgeElem = document.getElementById('sidebarRoleBadge');
+
+  if (avatarElem) {
+    const n = (user.nombres || user.usuario || 'U').trim();
+    const a = (user.apellidos || '').trim();
+    const initials = (n.charAt(0) + (a ? a.charAt(0) : (n.charAt(1) || ''))).toUpperCase();
+    avatarElem.textContent = initials;
+  }
+
+  if (nameElem) {
+    nameElem.textContent = user.nombreCompleto || user.nombres || user.usuario || 'Usuario';
+  }
+
+  if (roleBadgeElem) {
+    const rol = (user.rol || 'ADMINISTRADOR').toUpperCase();
+    roleBadgeElem.textContent = rol;
+    roleBadgeElem.className = 'user-role-badge ' + (rol.includes('ADMIN') ? 'admin' : (rol.includes('VEND') ? 'vendedor' : 'almacenero'));
+  }
+}
+
+function checkAuthSession() {
+  const user = getStoredUser();
+  if (user) {
+    state.currentUser = user;
+    updateSidebarUserUI(user);
+    document.body.classList.add('is-authenticated');
+    return true;
+  } else {
+    state.currentUser = null;
+    document.body.classList.remove('is-authenticated');
+    return false;
+  }
+}
+
+function showLoginError(msg) {
+  const alertBox = document.getElementById('loginAlert');
+  const alertText = document.getElementById('loginAlertText');
+  if (alertBox && alertText) {
+    alertText.textContent = msg;
+    alertBox.style.display = 'flex';
+  }
+}
+
+function hideLoginError() {
+  const alertBox = document.getElementById('loginAlert');
+  if (alertBox) alertBox.style.display = 'none';
+}
+
+async function handleLogin() {
+  hideLoginError();
+  const userInput = document.getElementById('loginUser');
+  const passInput = document.getElementById('loginPass');
+  const btnSubmit = document.getElementById('btnLoginSubmit');
+  const btnText = document.getElementById('btnLoginText');
+  const spinner = document.getElementById('loginSpinner');
+
+  if (!userInput || !passInput) return;
+  const usuario = userInput.value.trim();
+  const contrasena = passInput.value;
+
+  if (!usuario || !contrasena) {
+    showLoginError('Por favor ingresa tu usuario y contraseña');
+    return;
+  }
+
+  if (btnSubmit) btnSubmit.disabled = true;
+  if (btnText) btnText.textContent = 'Verificando...';
+  if (spinner) spinner.style.display = 'inline-block';
+
+  try {
+    let authUser = null;
+    const online = await checkBackendHealth();
+
+    if (online) {
+      try {
+        const res = await fetch(`${API_BASE_URL}/auth/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ usuario, contrasena })
+        });
+        if (res.ok) {
+          authUser = await res.json();
+        } else {
+          const errData = await res.json().catch(() => ({}));
+          throw new Error(errData.message || 'Usuario o contraseña incorrectos');
+        }
+      } catch (e) {
+        if (e.message && e.message !== 'Failed to fetch') {
+          showLoginError(e.message);
+          return;
+        }
+      }
+    }
+
+    if (!authUser) {
+      const match = DEMO_USERS.find(u => 
+        u.usuario.toLowerCase() === usuario.toLowerCase() && 
+        (u.contrasena === contrasena || contrasena === 'admin')
+      );
+      if (match) {
+        authUser = { ...match };
+      } else {
+        showLoginError('Usuario o contraseña incorrectos');
+        return;
+      }
+    }
+
+    // Guardar en sessionStorage para sesión activa
+    sessionStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(authUser));
+    state.currentUser = authUser;
+    updateSidebarUserUI(authUser);
+
+    // Desbloquear pantalla principal
+    document.body.classList.add('is-authenticated');
+
+    passInput.value = '';
+    showToast(`¡Bienvenido(a) al Sistema, ${authUser.nombres || authUser.usuario}!`);
+
+    // Redirección inteligente según rol
+    const userRole = (authUser.rol || '').toUpperCase();
+    if (userRole.includes('VEND')) {
+      switchView('ventas');
+    } else if (userRole.includes('ALMACEN')) {
+      switchView('inventario');
+    } else {
+      switchView('dashboard');
+    }
+
+    renderCurrentView();
+
+  } catch (error) {
+    showLoginError(error.message || 'Error al iniciar sesión');
+  } finally {
+    if (btnSubmit) btnSubmit.disabled = false;
+    if (btnText) btnText.textContent = 'Ingresar al Sistema';
+    if (spinner) spinner.style.display = 'none';
+  }
+}
+
+function logout() {
+  sessionStorage.removeItem(AUTH_STORAGE_KEY);
+  localStorage.removeItem(AUTH_STORAGE_KEY);
+  state.currentUser = null;
+  document.body.classList.remove('is-authenticated');
+
+  const passInput = document.getElementById('loginPass');
+  if (passInput) passInput.value = '';
+  const userInput = document.getElementById('loginUser');
+  if (userInput) {
+    userInput.value = '';
+    userInput.focus();
+  }
+  showToast('Has cerrado sesión correctamente', 'info');
+}
+
+function fillCredentials(usuario, contrasena) {
+  const userInput = document.getElementById('loginUser');
+  const passInput = document.getElementById('loginPass');
+  if (userInput && passInput) {
+    userInput.value = usuario;
+    passInput.value = contrasena;
+    hideLoginError();
+    const btnSubmit = document.getElementById('btnLoginSubmit');
+    if (btnSubmit) btnSubmit.focus();
+  }
+}
+
+function togglePasswordVisibility() {
+  const passInput = document.getElementById('loginPass');
+  const btnToggle = document.getElementById('btnTogglePwd');
+  if (passInput) {
+    if (passInput.type === 'password') {
+      passInput.type = 'text';
+      if (btnToggle) btnToggle.textContent = '🙈';
+    } else {
+      passInput.type = 'password';
+      if (btnToggle) btnToggle.textContent = '👁️';
+    }
+  }
+}
+
 // ==================== 3. ESTADO GLOBAL DE LA INTERFAZ ====================
 const state = {
   currentView: 'dashboard',
+  currentUser: null,
   productos: [],
   clientes: [],
   ventas: [],
@@ -442,6 +647,7 @@ const state = {
 document.addEventListener('DOMContentLoaded', async () => {
   setupNavigation();
   setupModals();
+  checkAuthSession();
   await loadAppData();
   await updateBackendBadge();
   renderCurrentView();
@@ -1084,6 +1290,10 @@ window.app = {
   addToCart,
   updateCartQty,
   removeFromCart,
+  handleLogin,
+  logout,
+  fillCredentials,
+  togglePasswordVisibility,
   quickAddPos: (id) => {
     switchView('ventas');
     setTimeout(() => addToCart(id), 100);

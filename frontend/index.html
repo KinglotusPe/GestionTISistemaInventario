@@ -4,13 +4,80 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Plastiquería y Descartables Jireh | Sistema de Ventas e Inventario</title>
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="./src/styles/main.css">
-  <link rel="stylesheet" href="./src/styles/components.css">
+  <link rel="stylesheet" href="./src/styles/main.css?v=2.0">
+  <link rel="stylesheet" href="./src/styles/components.css?v=2.0">
 </head>
-<body>
+<body class="">
+  <!-- ==================== PANTALLA DE LOGIN ==================== -->
+  <div class="login-overlay" id="loginOverlay">
+    <div class="login-card">
+      <div class="login-brand-header">
+        <div class="login-logo">P</div>
+        <h2>Plastiquería Jireh</h2>
+        <p>Sistema Integral de Ventas e Inventario</p>
+      </div>
+
+      <div class="login-error-alert" id="loginAlert">
+        <span>⚠️</span>
+        <span id="loginAlertText">Usuario o contraseña incorrectos</span>
+      </div>
+
+      <form class="login-form" id="loginForm" onsubmit="event.preventDefault(); window.app.handleLogin();">
+        <div class="form-group">
+          <label for="loginUser">Usuario o Código</label>
+          <div class="login-input-wrap">
+            <span class="login-input-icon">👤</span>
+            <input type="text" id="loginUser" class="form-control" placeholder="Ej: admin, vendedor, almacenero" required autocomplete="username">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="loginPass">Contraseña</label>
+          <div class="login-input-wrap">
+            <span class="login-input-icon">🔒</span>
+            <input type="password" id="loginPass" class="form-control" placeholder="Ingresa tu contraseña" required autocomplete="current-password">
+            <button type="button" class="btn-toggle-pwd" id="btnTogglePwd" title="Mostrar/ocultar contraseña" onclick="window.app.togglePasswordVisibility()">
+              👁️
+            </button>
+          </div>
+        </div>
+
+        <button type="submit" class="btn-login-submit" id="btnLoginSubmit">
+          <span id="btnLoginText">Ingresar al Sistema</span>
+          <span id="loginSpinner" style="display:none;">⏳</span>
+        </button>
+      </form>
+
+      <!-- Botones de Acceso Rápido para Demostración -->
+      <div class="quick-fill-section">
+        <div class="quick-fill-label">
+          <span>Cuentas de Acceso Rápido</span>
+          <span style="font-size: 0.68rem; color: #94a3b8;">(Clic para rellenar)</span>
+        </div>
+        <div class="quick-fill-grid">
+          <button type="button" class="quick-pill" onclick="window.app.fillCredentials('admin', 'admin')">
+            <span>👑 Admin</span>
+            <span class="pill-role">Acceso Total</span>
+          </button>
+          <button type="button" class="quick-pill" onclick="window.app.fillCredentials('vendedor', 'vendedor123')">
+            <span>💼 Ventas</span>
+            <span class="pill-role">POS & Boletas</span>
+          </button>
+          <button type="button" class="quick-pill" onclick="window.app.fillCredentials('almacenero', 'almacen123')">
+            <span>📦 Almacén</span>
+            <span class="pill-role">Stock & Kárdex</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div class="app-container">
     <!-- ==================== SIDEBAR ==================== -->
     <aside class="sidebar">
@@ -47,11 +114,16 @@
 
       <div class="sidebar-footer">
         <div class="user-profile">
-          <div class="user-avatar">AD</div>
-          <div class="user-details">
-            <h4>Administrador</h4>
-            <p>admin@jireh.com</p>
+          <div class="user-profile-info">
+            <div class="user-avatar" id="sidebarUserAvatar">AD</div>
+            <div class="user-details">
+              <h4 id="sidebarUserName">Administrador</h4>
+              <p id="sidebarUserRole"><span class="user-role-badge admin" id="sidebarRoleBadge">ADMINISTRADOR</span></p>
+            </div>
           </div>
+          <button class="btn-sidebar-logout" id="btnLogout" title="Cerrar Sesión" onclick="window.app.logout()">
+            🚪
+          </button>
         </div>
       </div>
     </aside>
@@ -471,6 +543,6 @@
   <div class="toast-container" id="toastContainer"></div>
 
   <!-- Script Principal -->
-  <script src="./src/app.js"></script>
+  <script src="./src/app.js?v=2.0"></script>
 </body>
 </html>

@@ -25,7 +25,7 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        // Serve frontend files directly from ../frontend directory
+        // Serve frontend files directly from ../frontend directory without caching
         File frontendDir = new File("../frontend");
         if (frontendDir.exists()) {
             String location = frontendDir.toURI().toString();
@@ -33,7 +33,8 @@ public class WebConfig implements WebMvcConfigurer {
                 location += "/";
             }
             registry.addResourceHandler("/**")
-                    .addResourceLocations(location, "classpath:/static/", "classpath:/public/");
+                    .addResourceLocations(location, "classpath:/static/", "classpath:/public/")
+                    .setCacheControl(org.springframework.http.CacheControl.noStore().mustRevalidate());
         }
     }
 }
